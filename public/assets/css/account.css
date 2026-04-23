@@ -1,0 +1,33 @@
+.account-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 720px);
+    justify-content: center;
+}
+
+.account-panel {
+    padding: 24px;
+    background: linear-gradient(180deg, #191919 0%, #111111 100%);
+    border: 1px solid #2a2a2a;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.account-form {
+    display: grid;
+    gap: 18px;
+}
+
+.account-field {
+    display: grid;
+    gap: 8px;
+}
+
+.account-field label {
+    font-weight: 700;
+}
+
+.account-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
