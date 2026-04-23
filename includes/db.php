@@ -9,13 +9,14 @@ declare(strict_types=1);
 | Adapter uniquement les variables ci-dessous selon l'environnement local.
 */
 
-$dbHost = 'localhost';
+$dbHost = '10.198.6.191';
+$dbPort = '3307';
 $dbName = 'mangasan';
-$dbUser = 'root';
-$dbPass = '';
+$dbUser = 'Mangasan';
+$dbPass = 'Mangasan2026';
 $dbCharset = 'utf8mb4';
 
-$dsn = "mysql:host={$dbHost};dbname={$dbName};charset={$dbCharset}";
+$dsn = "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset={$dbCharset}";
 
 $options = [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

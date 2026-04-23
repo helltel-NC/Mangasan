@@ -182,7 +182,7 @@ require_once __DIR__ . '/../includes/header.php';
                 </article>
 
                 <article class="admin-card">
-                    <h3>Reviews</h3>
+                    <h3>Fiche de lecture</h3>
                     <p>Total : <?php echo (int)$stats['reviews_total']; ?></p>
                     <p>Verrouillées : <?php echo (int)$stats['reviews_locked']; ?></p>
                       <div class="admin-card-actions">
@@ -260,7 +260,7 @@ require_once __DIR__ . '/../includes/header.php';
                 </article>
 
                 <article class="admin-card">
-                    <h3>Reviews</h3>
+                    <h3>Fiche de lecture</h3>
                     <p>Consultation, modération, verrouillage et suppression des avis.</p>
                     <div class="admin-card-actions">
                         <a href="/mangasan/admin/reviews.php" class="btn btn-primary">Gérer</a>

@@ -246,9 +246,21 @@ $heroLoginPosition = (string) ($siteSettings['hero_login_position'] ?? 'right');
 $heroLoginPosition = in_array($heroLoginPosition, ['left', 'right'], true) ? $heroLoginPosition : 'right';
 $homepageIntro = trim((string) ($siteSettings['homepage_intro'] ?? ''));
 
-$heroTitle = !empty($heroSection['title']) ? (string) $heroSection['title'] : $siteTitle;
-$heroKicker = !empty($heroSection['subtilte']) ? (string) $heroSection['subtilte'] : 'Mangasan';
-$heroDescription = !empty($heroSection['content']) ? (string) $heroSection['content'] : $homepageIntro;
+$heroTitle = !empty($heroSection['title'])
+    ? trim((string) $heroSection['title'])
+    : (in_array($siteTitleType, ['image', 'text_image', 'none'], true) ? '' : $siteTitle);
+
+$heroKicker = !empty($heroSection['subtilte'])
+    ? trim((string) $heroSection['subtilte'])
+    : '';
+
+$heroDescription = !empty($heroSection['content'])
+    ? (string) $heroSection['content']
+    : $homepageIntro;
+
+if ($heroKicker !== '' && mb_strtolower($heroKicker) === mb_strtolower($siteTitle)) {
+    $heroKicker = '';
+}
 $theme = getSiteThemeSettings($pdo);
 $headHtml = buildThemeStyleTag($theme);
 $heroStyle = '';
@@ -370,8 +382,13 @@ require_once __DIR__ . '/../includes/header.php';
 
         <div class="container hero-content hero-content--login-<?php echo e($heroLoginPosition); ?>">
             <div class="hero-text">
-                <p class="hero-kicker"><?php echo e($heroKicker); ?></p>
-                <h1 class="hero-title"><?php echo e($heroTitle); ?></h1>
+                <?php if ($heroKicker !== ''): ?>
+                    <p class="hero-kicker"><?php echo e($heroKicker); ?></p>
+                <?php endif; ?>
+
+                <?php if ($heroTitle !== ''): ?>
+                    <h1 class="hero-title"><?php echo e($heroTitle); ?></h1>
+                <?php endif; ?>
 
                 <?php if ($heroDescription !== ''): ?>
                     <p class="hero-description"><?php echo renderMultilineText($heroDescription); ?></p>

@@ -3,19 +3,25 @@
 }
 
 .page-home .hero-content {
-    grid-template-columns: minmax(0, 1fr) 360px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 56px;
     align-items: start;
 }
 
+.page-home .hero-text {
+    max-width: 640px;
+}
+
 .page-home .hero-visual {
-    justify-content: flex-end;
+    display: flex;
     align-self: start;
 }
 
 .page-home .hero-login {
     width: 100%;
-    max-width: 360px;
-    padding: 20px;
+    max-width: 320px;
+    padding: 18px;
 }
 
 .page-home .login-form {
@@ -28,7 +34,7 @@
 }
 
 .page-home .hero-content--login-left {
-    grid-template-columns: 360px minmax(0, 1fr);
+    grid-template-columns: 320px minmax(0, 1fr);
 }
 
 .page-home .hero-content--login-left .hero-text {
@@ -40,6 +46,10 @@
     justify-content: flex-start;
 }
 
+.page-home .hero-content--login-left .hero-login {
+    margin-right: auto;
+}
+
 .page-home .hero-content--login-right .hero-text {
     order: 1;
 }
@@ -47,6 +57,10 @@
 .page-home .hero-content--login-right .hero-visual {
     order: 2;
     justify-content: flex-end;
+}
+
+.page-home .hero-content--login-right .hero-login {
+    margin-left: auto;
 }
 
 @media (max-width: 900px) {
@@ -67,6 +81,8 @@
 
     .page-home .hero-login {
         max-width: none;
+        margin-left: 0;
+        margin-right: 0;
     }
 }
 .carousel-shell {
@@ -488,9 +504,10 @@
     grid-column: 1 / -1;
 }
 .edition-meta-card {
-    margin-bottom: 28px;
-    padding: 24px;
-    max-width: 760px;
+    margin-bottom: 22px;
+    padding: 18px 20px;
+    max-width: 560px;
+    width: 100%;
     background: linear-gradient(180deg, #191919 0%, #111111 100%);
     border: 1px solid #2a2a2a;
     border-radius: var(--radius-md);
@@ -534,9 +551,9 @@
 
 .edition-meta-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    margin-bottom: 18px;
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
 }
 
 .edition-meta-item {
@@ -729,4 +746,9 @@
     font-size: 1.2rem;
     font-weight: 700;
     line-height: 1.1;
+}
+
+.page-home .hero-kicker:empty,
+.page-home .hero-title:empty {
+    display: none;
 }
