@@ -459,36 +459,32 @@ require_once __DIR__ . '/../includes/header.php';
     ?>
 
     <div class="edition-meta-card">
-        <div class="edition-meta-top">
+        <div class="edition-meta-head">
             <div>
-                <p class="edition-meta-label">Édition en cours</p>
-                <h3><?php echo e($activeEdition['title']); ?></h3>
+                <p class="edition-meta-kicker">Édition en cours</p>
+                <h3 class="edition-meta-title"><?php echo e($activeEdition['title']); ?></h3>
             </div>
 
-            <?php if (!empty($activeEdition['year'])): ?>
-                <span class="edition-meta-year"><?php echo e((string) $activeEdition['year']); ?></span>
-            <?php endif; ?>
+            <div class="edition-meta-year">
+                <?php echo e((string) $activeEdition['year']); ?>
+            </div>
         </div>
 
         <div class="edition-meta-grid">
-            <?php if ($editionPeriod !== ''): ?>
-                <div class="edition-meta-item">
-                    <span>Période</span>
-                    <strong><?php echo e($editionPeriod); ?></strong>
-                </div>
-            <?php endif; ?>
+            <div class="edition-meta-item">
+                <span>Période</span>
+                <strong>
+                    <?php echo e((string) $activeEdition['start_date']); ?>
+                    →
+                    <?php echo e((string) $activeEdition['end_date']); ?>
+                </strong>
+            </div>
 
             <div class="edition-meta-item">
                 <span>Mangas visibles</span>
                 <strong><?php echo (int) $activeEditionMangasCount; ?></strong>
             </div>
         </div>
-
-        <?php if (!empty($activeEdition['description'])): ?>
-            <p class="edition-meta-description">
-                <?php echo renderMultilineText((string) $activeEdition['description']); ?>
-            </p>
-        <?php endif; ?>
     </div>
 <?php endif; ?>
 <div class="carousel-shell<?php echo $activeEditionMangasCount <= 1 ? ' is-single' : ''; ?>">
