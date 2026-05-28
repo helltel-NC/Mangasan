@@ -9,8 +9,8 @@ declare(strict_types=1);
 | Adapter uniquement les variables ci-dessous selon l'environnement local.
 */
 
-$dbHost = '10.198.6.191';
-$dbPort = '3307';
+$dbHost = 'localhost';
+$dbPort = '3306';
 $dbName = 'mangasan';
 $dbUser = 'Mangasan';
 $dbPass = 'Mangasan2026';

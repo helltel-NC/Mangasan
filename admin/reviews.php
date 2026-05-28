@@ -24,6 +24,33 @@ function readingSheetStatusLabel(string $status): string
     };
 }
 
+function reviewFormTypeLabel(?string $formType): string
+{
+    return match ((string) $formType) {
+        'mangasan_reading_sheet_v1' => 'Fiche Manga San',
+        'classic_score' => 'Fiche avec notes',
+        default => (string) ($formType ?? 'classic_score')
+    };
+}
+
+function rankingMethodLabel(?string $method): string
+{
+    return match ((string) $method) {
+        'rank_points' => 'Points par rang',
+        'average', 'average_score' => 'Moyenne des notes',
+        default => (string) ($method ?? 'average_score')
+    };
+}
+
+function calculateRankPoints(int $totalMangas, int $personalRank): int
+{
+    if ($totalMangas < 1 || $personalRank < 1 || $personalRank > $totalMangas) {
+        return 0;
+    }
+
+    return $totalMangas - $personalRank + 1;
+}
+
 $pageTitle = 'Gestion des fiches de lecture - Mangasan';
 $extraCss = [
     '/mangasan/public/assets/css/admin.css'
@@ -38,6 +65,7 @@ $flashMessages = getFlashMessages();
 
 $editionId = filter_input(INPUT_GET, 'edition_id', FILTER_VALIDATE_INT);
 $status = trim((string) ($_GET['status'] ?? ''));
+$formType = trim((string) ($_GET['form_type'] ?? ''));
 $search = trim((string) ($_GET['search'] ?? ''));
 
 $allowedStatuses = ['editable', 'locked'];
@@ -45,8 +73,13 @@ if (!in_array($status, $allowedStatuses, true)) {
     $status = '';
 }
 
+$allowedFormTypes = ['classic_score', 'mangasan_reading_sheet_v1'];
+if (!in_array($formType, $allowedFormTypes, true)) {
+    $formType = '';
+}
+
 $editionsStmt = $pdo->query(
-    "SELECT id, title, year, status
+    "SELECT id, title, year, status, review_form_type, ranking_calculation_method
      FROM editions
      ORDER BY is_active DESC, year DESC, start_date DESC, id DESC"
 );
@@ -73,6 +106,8 @@ $sql = "
         editions.title AS edition_title,
         editions.year AS edition_year,
         editions.score_max,
+        editions.review_form_type,
+        editions.ranking_calculation_method,
         mangas.title AS manga_title,
         COALESCE(
             NULLIF(users.display_name, ''),
@@ -83,7 +118,15 @@ $sql = "
             NULLIF(locker.display_name, ''),
             NULLIF(TRIM(CONCAT(locker.first_name, ' ', locker.last_name)), ''),
             locker.username
-        ) AS locked_by_name
+        ) AS locked_by_name,
+        (
+            SELECT COUNT(*)
+            FROM edition_mangas visible_em
+            INNER JOIN mangas visible_mangas ON visible_mangas.id = visible_em.manga_id
+            WHERE visible_em.edition_id = reviews.edition_id
+              AND visible_em.is_visible = 1
+              AND visible_mangas.status = 'active'
+        ) AS edition_manga_count
     FROM reviews
     INNER JOIN editions ON editions.id = reviews.edition_id
     INNER JOIN mangas ON mangas.id = reviews.manga_id
@@ -104,6 +147,11 @@ if ($status !== '') {
     $params['status'] = $status;
 }
 
+if ($formType !== '') {
+    $sql .= " AND editions.review_form_type = :form_type";
+    $params['form_type'] = $formType;
+}
+
 if ($search !== '') {
     $sql .= "
         AND (
@@ -113,6 +161,7 @@ if ($search !== '') {
             OR users.first_name LIKE :search
             OR users.last_name LIKE :search
             OR editions.title LIKE :search
+            OR reviews.review_text LIKE :search
         )
     ";
     $params['search'] = '%' . $search . '%';
@@ -163,6 +212,15 @@ require_once __DIR__ . '/../includes/header.php';
                         </div>
 
                         <div class="admin-field">
+                            <label for="form_type">Type de fiche</label>
+                            <select id="form_type" name="form_type">
+                                <option value="">Tous les types</option>
+                                <option value="classic_score" <?php echo $formType === 'classic_score' ? 'selected' : ''; ?>>Fiche avec notes</option>
+                                <option value="mangasan_reading_sheet_v1" <?php echo $formType === 'mangasan_reading_sheet_v1' ? 'selected' : ''; ?>>Fiche Manga San</option>
+                            </select>
+                        </div>
+
+                        <div class="admin-field">
                             <label for="status">Statut</label>
                             <select id="status" name="status">
                                 <option value="">Tous</option>
@@ -173,7 +231,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                         <div class="admin-field">
                             <label for="search">Recherche</label>
-                            <input type="text" id="search" name="search" value="<?php echo e($search); ?>" placeholder="Utilisateur, manga, édition...">
+                            <input type="text" id="search" name="search" value="<?php echo e($search); ?>" placeholder="Utilisateur, manga, édition, avis...">
                         </div>
                     </div>
 
@@ -214,8 +272,9 @@ require_once __DIR__ . '/../includes/header.php';
                                 </th>
                                 <th>Utilisateur</th>
                                 <th>Édition</th>
+                                <th>Type</th>
                                 <th>Manga</th>
-                                <th>Note</th>
+                                <th>Résultat</th>
                                 <th>Rang</th>
                                 <th>Statut</th>
                                 <th>Mise à jour</th>
@@ -224,6 +283,11 @@ require_once __DIR__ . '/../includes/header.php';
                         </thead>
                         <tbody>
                             <?php foreach ($readingSheets as $readingSheet): ?>
+                                <?php
+                                    $sheetMethod = (string) ($readingSheet['ranking_calculation_method'] ?? 'average_score');
+                                    $totalMangas = (int) ($readingSheet['edition_manga_count'] ?? 0);
+                                    $rankPoints = calculateRankPoints($totalMangas, (int) $readingSheet['personal_rank']);
+                                ?>
                                 <tr>
                                     <td>
                                         <input
@@ -241,14 +305,24 @@ require_once __DIR__ . '/../includes/header.php';
                                         <strong><?php echo e($readingSheet['edition_title']); ?></strong>
                                         <br>
                                         <span class="admin-cell-muted"><?php echo e((string) $readingSheet['edition_year']); ?></span>
+                                        <br>
+                                        <span class="admin-cell-muted"><?php echo e(rankingMethodLabel($sheetMethod)); ?></span>
                                     </td>
+
+                                    <td><?php echo e(reviewFormTypeLabel((string) ($readingSheet['review_form_type'] ?? 'classic_score'))); ?></td>
 
                                     <td><?php echo e($readingSheet['manga_title']); ?></td>
 
                                     <td>
-                                        <span class="admin-score-pill">
-                                            <?php echo e(number_format((float) $readingSheet['score'], 2, '.', '')); ?> / <?php echo e((string) $readingSheet['score_max']); ?>
-                                        </span>
+                                        <?php if ($sheetMethod === 'rank_points'): ?>
+                                            <span class="admin-score-pill">
+                                                <?php echo $rankPoints; ?> pts
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="admin-score-pill">
+                                                <?php echo e(number_format((float) $readingSheet['score'], 2, '.', '')); ?> / <?php echo e((string) $readingSheet['score_max']); ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
 
                                     <td><?php echo (int) $readingSheet['personal_rank']; ?></td>
@@ -268,7 +342,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                                     <td>
                                         <div class="admin-actions-inline">
-                                            <a href="/mangasan/admin/review_edit.php?id=<?php echo (int) $readingSheet['id']; ?>" class="btn btn-primary">Modifier</a>
+                                            <a href="/mangasan/admin/review_edit.php?id=<?php echo (int) $readingSheet['id']; ?>" class="btn btn-primary">Ouvrir</a>
 
                                             <?php if ((string) $readingSheet['status'] === 'locked'): ?>
                                                 <form method="post" action="/mangasan/actions/review_unlock.php">
@@ -296,7 +370,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                             <?php if (!$readingSheets): ?>
                                 <tr>
-                                    <td colspan="9">Aucune fiche de lecture trouvée.</td>
+                                    <td colspan="10">Aucune fiche de lecture trouvée.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>

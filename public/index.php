@@ -601,20 +601,40 @@ require_once __DIR__ . '/../includes/header.php';
                                 <h3><?php echo e((string) $rankingItem['title']); ?></h3>
 
                                 <div class="ranking-stats">
+                                    <?php $rankingMethod = (string) ($rankingItem['ranking_method'] ?? ($activeEdition['ranking_calculation_method'] ?? 'average_score')); ?>
+
                                     <?php if ($rankingItem['reviews_count'] > 0): ?>
-                                        <div class="ranking-stat">
-                                            <span>Moyenne</span>
-                                            <strong><?php echo e(number_format((float) $rankingItem['average_score'], 2, '.', '')); ?> / <?php echo e((string) $activeEdition['score_max']); ?></strong>
-                                        </div>
+                                        <?php if ($rankingMethod === 'rank_points'): ?>
+                                            <div class="ranking-stat">
+                                                <span>Points</span>
+                                                <strong><?php echo (int) ($rankingItem['total_points'] ?? 0); ?> pts</strong>
+                                            </div>
+
+                                            <div class="ranking-stat">
+                                                <span>Rang moyen</span>
+                                                <strong>
+                                                    <?php if ($rankingItem['average_rank'] !== null): ?>
+                                                        <?php echo e(number_format((float) $rankingItem['average_rank'], 2, '.', '')); ?>
+                                                    <?php else: ?>
+                                                        —
+                                                    <?php endif; ?>
+                                                </strong>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="ranking-stat">
+                                                <span>Moyenne</span>
+                                                <strong><?php echo e(number_format((float) $rankingItem['average_score'], 2, '.', '')); ?> / <?php echo e((string) $activeEdition['score_max']); ?></strong>
+                                            </div>
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <div class="ranking-stat">
                                             <span>État</span>
-                                            <strong>Sans note</strong>
+                                            <strong><?php echo $rankingMethod === 'rank_points' ? 'Non classé' : 'Sans note'; ?></strong>
                                         </div>
                                     <?php endif; ?>
 
                                     <div class="ranking-stat">
-                                        <span>Reviews</span>
+                                        <span>Fiches</span>
                                         <strong><?php echo (int) $rankingItem['reviews_count']; ?></strong>
                                     </div>
                                 </div>

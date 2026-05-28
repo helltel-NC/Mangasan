@@ -1,37 +1,106 @@
+
+.review-compact-heading {
+    padding: 34px 0 22px;
+    background: linear-gradient(135deg, var(--color-surface-alt), #000000);
+    border-bottom: 2px solid var(--color-primary);
+}
+
+.review-heading-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 22px;
+}
+
+.review-heading-eyebrow {
+    margin: 0 0 8px;
+    color: var(--color-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.review-heading-title {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 1.05;
+}
+
+.review-heading-subtitle {
+    margin: 12px 0 0;
+    color: var(--color-text-muted);
+}
+
+.review-heading-meta {
+    display: grid;
+    gap: 6px;
+    min-width: min(100%, 320px);
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: var(--radius-sm);
+}
+
+.review-heading-meta span {
+    color: var(--color-text-muted);
+    font-size: 0.86rem;
+}
+
+.review-heading-meta strong {
+    color: var(--color-text);
+}
+
+.review-main-section {
+    padding-top: 42px;
+}
+
 .review-page .review-hero {
     position: relative;
 }
 
+.review-page .review-hero-content {
+    grid-template-columns: 1fr;
+    padding: 46px 0 34px;
+}
+
+.review-hero-meta {
+    margin-top: 12px;
+}
+
 .review-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) 360px;
+    grid-template-columns: minmax(0, 1fr) 340px;
     gap: 24px;
     align-items: start;
 }
 
 .review-panel,
 .review-side-card,
-.review-cover-card {
+.review-cover-card,
+.review-manga-card {
     background: linear-gradient(180deg, #191919 0%, #111111 100%);
-    border: 1px solid #2a2a2a;
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
 }
 
 .review-panel {
-    padding: 24px;
+    padding: 20px;
 }
 
 .review-side-card {
-    padding: 24px;
+    padding: 22px;
     display: grid;
-    gap: 16px;
+    gap: 14px;
     position: sticky;
     top: 24px;
 }
 
 .review-side-card h2 {
     margin: 0;
+    padding-left: 10px;
+    border-left: 4px solid var(--color-primary);
     font-size: 1.2rem;
 }
 
@@ -40,12 +109,15 @@
     gap: 6px;
     padding: 14px 16px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--radius-sm);
 }
 
-.review-side-block span {
-    font-size: 0.82rem;
+.review-side-block span,
+.review-meta-item span,
+.review-manga-facts span,
+.review-kicker {
+    font-size: 0.78rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-text-muted);
@@ -57,6 +129,20 @@
     margin: 0;
 }
 
+.review-manga-card {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 26px;
+    align-items: stretch;
+    margin-bottom: 24px;
+    padding: 22px;
+    overflow: hidden;
+}
+
+.review-manga-cover-wrap {
+    min-height: 310px;
+}
+
 .review-cover-card {
     width: 100%;
     max-width: 260px;
@@ -65,34 +151,102 @@
 
 .review-cover-image {
     width: 100%;
+    height: 100%;
+    min-height: 310px;
     aspect-ratio: 2 / 3;
     object-fit: cover;
     border-radius: var(--radius-md);
     display: block;
+    background: #151515;
 }
 
 .review-cover-placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 320px;
+    min-height: 310px;
+    height: 100%;
+    padding: 18px;
     color: var(--color-text-muted);
+    text-align: center;
     background: #151515;
+    border: 1px dashed rgba(255, 255, 255, 0.16);
     border-radius: var(--radius-md);
+}
+
+.review-manga-info {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+}
+
+.review-manga-info h2 {
+    margin: 0;
+    padding-left: 10px;
+    border-left: 4px solid var(--color-primary);
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    line-height: 1.12;
+}
+
+.review-manga-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+}
+
+.review-manga-facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.review-manga-facts div {
+    display: grid;
+    gap: 5px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+}
+
+.review-manga-summary {
+    display: grid;
+    gap: 8px;
+    margin-top: 4px;
+    padding: 16px 18px;
+    background: rgba(229, 9, 20, 0.08);
+    border: 1px solid rgba(229, 9, 20, 0.22);
+    border-radius: var(--radius-md);
+}
+
+.review-manga-summary h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.review-manga-summary p,
+.review-empty-text {
+    margin: 0;
+    color: var(--color-text-muted);
 }
 
 .review-form {
     display: grid;
-    gap: 24px;
+    gap: 20px;
 }
 
 .review-form-section {
     display: grid;
     gap: 16px;
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
 }
 
 .review-form-section h2 {
     margin: 0;
+    padding-left: 10px;
+    border-left: 4px solid var(--color-primary);
     font-size: 1.2rem;
 }
 
@@ -112,8 +266,57 @@
     font-weight: 700;
 }
 
+.review-field small {
+    color: var(--color-text-muted);
+}
+
 .review-field textarea {
-    min-height: 180px;
+    min-height: 145px;
+}
+
+.review-field input:disabled,
+.review-field textarea:disabled,
+.review-field select:disabled {
+    opacity: 0.85;
+    cursor: not-allowed;
+}
+
+.review-checkbox-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.review-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 9px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition-fast);
+}
+
+.review-checkbox:hover {
+    border-color: rgba(229, 9, 20, 0.45);
+    background: rgba(229, 9, 20, 0.08);
+}
+
+.review-checkbox input[type="checkbox"] {
+    width: auto;
+    min-width: 16px;
+    height: 16px;
+    padding: 0;
+    margin: 0;
+    accent-color: var(--color-primary);
+}
+
+.review-checkbox span {
+    line-height: 1;
 }
 
 .review-meta-item {
@@ -121,15 +324,8 @@
     gap: 6px;
     padding: 14px 16px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--radius-sm);
-}
-
-.review-meta-item span {
-    font-size: 0.82rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
 }
 
 .review-meta-item strong {
@@ -143,7 +339,7 @@
     gap: 16px;
     padding: 16px 18px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--radius-md);
 }
 
@@ -163,7 +359,7 @@
     gap: 10px;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1050px) {
     .review-layout {
         grid-template-columns: 1fr;
     }
@@ -174,9 +370,20 @@
 }
 
 @media (max-width: 900px) {
+    .review-heading-inner,
+    .review-manga-card,
     .review-grid,
-    .review-meta-list {
+    .review-meta-list,
+    .review-manga-facts {
         grid-template-columns: 1fr;
+    }
+
+    .review-heading-inner {
+        align-items: flex-start;
+    }
+
+    .review-manga-cover-wrap {
+        max-width: 280px;
     }
 
     .review-score-box {
@@ -186,5 +393,27 @@
 
     .review-cover-card {
         max-width: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .review-panel,
+    .review-side-card,
+    .review-manga-card {
+        padding: 16px;
+    }
+
+    .review-form-section {
+        padding: 14px;
+    }
+
+    .review-checkbox-list {
+        gap: 8px;
+    }
+
+    .review-checkbox {
+        width: 100%;
+        justify-content: flex-start;
+        border-radius: var(--radius-sm);
     }
 }

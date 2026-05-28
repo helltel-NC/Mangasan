@@ -26,6 +26,25 @@ function editionStatusLabel(string $status): string
     };
 }
 
+
+function reviewFormTypeLabel(?string $formType): string
+{
+    return match ((string) $formType) {
+        'mangasan_reading_sheet_v1' => 'Fiche Manga San',
+        'classic_score' => 'Fiche avec notes',
+        default => (string) ($formType ?? 'classic_score')
+    };
+}
+
+function rankingMethodLabel(?string $method): string
+{
+    return match ((string) $method) {
+        'rank_points' => 'Points par rang',
+        'average', 'average_score' => 'Moyenne des notes',
+        default => (string) ($method ?? 'average_score')
+    };
+}
+
 $editionId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 $isEditMode = $editionId !== false && $editionId !== null;
 
@@ -38,7 +57,8 @@ $edition = [
     'is_active' => 0,
     'general_ranking_visibility' => 'hidden',
     'general_ranking_access' => 'members',
-    'ranking_calculation_method' => 'average',
+    'ranking_calculation_method' => 'average_score',
+    'review_form_type' => 'classic_score',
     'score_max' => 20,
     'start_date' => '',
     'end_date' => '',
@@ -175,20 +195,51 @@ require_once __DIR__ . '/../includes/header.php';
                                     </select>
                                 </div>
                             </div>
-                            <div class="admin-field">
+                            <div class="admin-form-grid">
+                                <div class="admin-field">
+                                    <label for="review_form_type">Type de fiche de lecture</label>
+                                    <select id="review_form_type" name="review_form_type" required>
+                                        <option value="classic_score" <?php echo (string) ($edition['review_form_type'] ?? 'classic_score') === 'classic_score' ? 'selected' : ''; ?>>
+                                            Ancienne fiche avec notes
+                                        </option>
+                                        <option value="mangasan_reading_sheet_v1" <?php echo (string) ($edition['review_form_type'] ?? 'classic_score') === 'mangasan_reading_sheet_v1' ? 'selected' : ''; ?>>
+                                            Fiche Manga San / Myriam
+                                        </option>
+                                    </select>
+                                    <small class="admin-help-text">
+                                        Permet de changer le modèle de fiche utilisé par les élèves pour cette édition.
+                                    </small>
+                                </div>
+
+                                <div class="admin-field">
+                                    <label for="ranking_calculation_method">Méthode de calcul du classement</label>
+                                    <select id="ranking_calculation_method" name="ranking_calculation_method" required>
+                                        <option value="average_score" <?php echo in_array((string) $edition['ranking_calculation_method'], ['average', 'average_score'], true) ? 'selected' : ''; ?>>
+                                            Moyenne des notes
+                                        </option>
+                                        <option value="rank_points" <?php echo (string) $edition['ranking_calculation_method'] === 'rank_points' ? 'selected' : ''; ?>>
+                                            Points selon le rang personnel
+                                        </option>
+                                    </select>
+                                    <small class="admin-help-text" id="ranking_method_help">
+                                        Pour Manga San, le mode conseillé est : points selon le rang personnel.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="admin-field" id="score_max_field" data-dynamic-field="score_max">
                                 <label for="score_max">Barème des notes</label>
                                 <select id="score_max" name="score_max" required>
                                     <option value="5" <?php echo (int) $edition['score_max'] === 5 ? 'selected' : ''; ?>>Sur 5</option>
                                     <option value="10" <?php echo (int) $edition['score_max'] === 10 ? 'selected' : ''; ?>>Sur 10</option>
                                     <option value="20" <?php echo (int) $edition['score_max'] === 20 ? 'selected' : ''; ?>>Sur 20</option>
                                 </select>
+                                <small class="admin-help-text" id="score_max_help">
+                                    Utilisé uniquement si le classement repose sur une moyenne de notes.
+                                </small>
                             </div>
-                            <div class="admin-field">
-                                <label for="ranking_calculation_method">Méthode de calcul du classement</label>
-                                <select id="ranking_calculation_method" name="ranking_calculation_method">
-                                    <option value="average" selected>Moyenne</option>
-                                </select>
-                            </div>
+
+                            <div class="admin-mode-advice" id="edition_mode_advice" aria-live="polite"></div>
                         </div>
 
                         <div class="admin-form-section">
@@ -236,6 +287,16 @@ require_once __DIR__ . '/../includes/header.php';
                         </div>
 
                         <div class="admin-summary-item">
+                            <span>Type de fiche</span>
+                            <strong><?php echo e(reviewFormTypeLabel((string) ($edition['review_form_type'] ?? 'classic_score'))); ?></strong>
+                        </div>
+
+                        <div class="admin-summary-item">
+                            <span>Méthode classement</span>
+                            <strong><?php echo e(rankingMethodLabel((string) $edition['ranking_calculation_method'])); ?></strong>
+                        </div>
+
+                        <div class="admin-summary-item">
                             <span>Mangas liés</span>
                             <strong><?php echo (int) $stats['mangas_count']; ?></strong>
                         </div>
@@ -262,5 +323,90 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </section>
 </main>
+
+
+<style>
+    .admin-dynamic-hidden {
+        display: none !important;
+    }
+
+    .admin-mode-advice {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border: 1px solid rgba(229, 9, 20, 0.28);
+        border-radius: var(--radius-sm);
+        background: rgba(229, 9, 20, 0.08);
+        color: var(--color-text-muted);
+        font-size: 0.92rem;
+        line-height: 1.5;
+    }
+
+    .admin-mode-advice strong {
+        color: var(--color-text);
+    }
+</style>
+
+<script>
+(function () {
+    const reviewFormType = document.getElementById('review_form_type');
+    const rankingMethod = document.getElementById('ranking_calculation_method');
+    const scoreMaxField = document.getElementById('score_max_field');
+    const rankingHelp = document.getElementById('ranking_method_help');
+    const advice = document.getElementById('edition_mode_advice');
+
+    if (!reviewFormType || !rankingMethod || !scoreMaxField || !advice) {
+        return;
+    }
+
+    const messages = {
+        classicAverage: '<strong>Mode classique :</strong> les élèves remplissent une fiche avec notes. Le barème est utile et le classement général utilise la moyenne.',
+        classicRank: '<strong>Mode mixte :</strong> fiche classique, mais classement par rang personnel. Le barème reste masqué car il ne sert pas au classement général.',
+        mangaRank: '<strong>Mode Manga San conseillé :</strong> fiche de lecture complète, puis classement par rang. Le barème des notes n’est pas utilisé.',
+        mangaAverage: '<strong>Attention :</strong> fiche Manga San avec moyenne des notes. C’est possible techniquement, mais moins cohérent si les élèves ne saisissent pas de notes.'
+    };
+
+    function isAverageMethod(value) {
+        return value === 'average' || value === 'average_score';
+    }
+
+    function refreshEditionMode() {
+        const formType = reviewFormType.value;
+        const method = rankingMethod.value;
+        const isMangaSan = formType === 'mangasan_reading_sheet_v1';
+        const isAverage = isAverageMethod(method);
+
+        scoreMaxField.classList.toggle('admin-dynamic-hidden', !isAverage);
+
+        if (rankingHelp) {
+            rankingHelp.textContent = isMangaSan
+                ? 'Pour la fiche Manga San, le mode conseillé est : points selon le rang personnel.'
+                : 'Pour l’ancienne fiche avec notes, le mode conseillé est : moyenne des notes.';
+        }
+
+        if (!isMangaSan && isAverage) {
+            advice.innerHTML = messages.classicAverage;
+        } else if (!isMangaSan && !isAverage) {
+            advice.innerHTML = messages.classicRank;
+        } else if (isMangaSan && !isAverage) {
+            advice.innerHTML = messages.mangaRank;
+        } else {
+            advice.innerHTML = messages.mangaAverage;
+        }
+    }
+
+    reviewFormType.addEventListener('change', function () {
+        if (reviewFormType.value === 'mangasan_reading_sheet_v1') {
+            rankingMethod.value = 'rank_points';
+        } else if (reviewFormType.value === 'classic_score') {
+            rankingMethod.value = 'average_score';
+        }
+
+        refreshEditionMode();
+    });
+
+    rankingMethod.addEventListener('change', refreshEditionMode);
+    refreshEditionMode();
+})();
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

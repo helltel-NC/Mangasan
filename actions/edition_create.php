@@ -19,7 +19,16 @@ function normalizeEditionStatus(string $status): string
 
 function normalizeRankingMethod(string $method): string
 {
-    return $method === 'average' ? 'average' : 'average';
+    if ($method === 'average') {
+        return 'average_score';
+    }
+
+    return in_array($method, ['average_score', 'rank_points'], true) ? $method : 'average_score';
+}
+
+function normalizeReviewFormType(string $formType): string
+{
+    return in_array($formType, ['classic_score', 'mangasan_reading_sheet_v1'], true) ? $formType : 'classic_score';
 }
 
 function normalizeRankingVisibility(string $visibility): string
@@ -48,7 +57,8 @@ $description = trim((string) ($_POST['description'] ?? ''));
 $status = normalizeEditionStatus((string) ($_POST['status'] ?? 'draft'));
 $generalRankingVisibility = normalizeRankingVisibility((string) ($_POST['general_ranking_visibility'] ?? 'hidden'));
 $generalRankingAccess = normalizeRankingAccess((string) ($_POST['general_ranking_access'] ?? 'members'));
-$rankingCalculationMethod = normalizeRankingMethod((string) ($_POST['ranking_calculation_method'] ?? 'average'));
+$rankingCalculationMethod = normalizeRankingMethod((string) ($_POST['ranking_calculation_method'] ?? 'average_score'));
+$reviewFormType = normalizeReviewFormType((string) ($_POST['review_form_type'] ?? 'classic_score'));
 $scoreMax = normalizeScoreMax(filter_input(INPUT_POST, 'score_max', FILTER_VALIDATE_INT));
 $startDate = trim((string) ($_POST['start_date'] ?? ''));
 $endDate = trim((string) ($_POST['end_date'] ?? ''));
@@ -103,6 +113,7 @@ try {
             general_ranking_visibility,
             general_ranking_access,
             ranking_calculation_method,
+            review_form_type,
             score_max,
             start_date,
             end_date
@@ -115,6 +126,7 @@ try {
             :general_ranking_visibility,
             :general_ranking_access,
             :ranking_calculation_method,
+            :review_form_type,
             :score_max,
             :start_date,
             :end_date
@@ -130,6 +142,7 @@ try {
         'general_ranking_visibility' => $generalRankingVisibility,
         'general_ranking_access' => $generalRankingAccess,
         'ranking_calculation_method' => $rankingCalculationMethod,
+        'review_form_type' => $reviewFormType,
         'score_max' => $scoreMax,
         'start_date' => $startDate,
         'end_date' => $endDate

@@ -27,6 +27,25 @@ function editionStatusLabel(string $status): string
 }
 
 
+function reviewFormTypeLabel(?string $formType): string
+{
+    return match ((string) $formType) {
+        'mangasan_reading_sheet_v1' => 'Fiche Manga San',
+        'classic_score' => 'Fiche avec notes',
+        default => (string) ($formType ?? 'classic_score')
+    };
+}
+
+function rankingMethodLabel(?string $method): string
+{
+    return match ((string) $method) {
+        'rank_points' => 'Points par rang',
+        'average', 'average_score' => 'Moyenne des notes',
+        default => (string) ($method ?? 'average_score')
+    };
+}
+
+
 $pageTitle = 'Gestion des éditions - Mangasan';
 $extraCss = [
     '/mangasan/public/assets/css/admin.css'
@@ -47,6 +66,7 @@ $stmt = $pdo->query(
         editions.general_ranking_visibility,
         editions.general_ranking_access,
         editions.ranking_calculation_method,
+        editions.review_form_type,
         editions.score_max,
         editions.start_date,
         editions.end_date,
@@ -104,6 +124,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 <th>Dates</th>
                                 <th>Mangas</th>
                                 <th>Reviews</th>
+                                <th>Fiche</th>
                                 <th>Classement</th>
                                 <th>Actions</th>
                             </tr>
@@ -144,6 +165,10 @@ require_once __DIR__ . '/../includes/header.php';
                     <td><?php echo (int) $edition['reviews_count']; ?></td>
 
                     <td>
+                        <?php echo e(reviewFormTypeLabel((string) ($edition['review_form_type'] ?? 'classic_score'))); ?>
+                    </td>
+
+                    <td>
                         <?php echo (string) $edition['general_ranking_visibility'] === 'visible' ? 'Visible' : 'Masqué'; ?>
                         <br>
                         <span class="admin-cell-muted">
@@ -151,7 +176,7 @@ require_once __DIR__ . '/../includes/header.php';
                         </span>
                         <br>
                         <span class="admin-cell-muted">
-                            <?php echo e((string) $edition['ranking_calculation_method']); ?> - /<?php echo (int) $edition['score_max']; ?>
+                            <?php echo e(rankingMethodLabel((string) $edition['ranking_calculation_method'])); ?><?php if (in_array((string) $edition['ranking_calculation_method'], ['average', 'average_score'], true)): ?> - /<?php echo (int) $edition['score_max']; ?><?php endif; ?>
                         </span>
                     </td>
 
@@ -177,7 +202,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                             <?php if (!$editions): ?>
                                 <tr>
-                                    <td colspan="9">Aucune édition trouvée.</td>
+                                    <td colspan="10">Aucune édition trouvée.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
