@@ -417,17 +417,35 @@ require_once __DIR__ . '/../includes/header.php';
                             <?php if (isAdmin()): ?>
                                 <a href="/mangasan/admin/index.php" class="btn btn-primary">Administration</a>
                             <?php else: ?>
-                                <a href="/mangasan/public/index.php" class="btn btn-primary">Espace membre</a>
+                                <a href="/mangasan/public/account.php?tab=fiches" class="btn btn-primary">Mes fiches</a>
                             <?php endif; ?>
 
                             <a href="/mangasan/actions/logout.php" class="btn btn-secondary">Déconnexion</a>
-                            <a href="/mangasan/public/account.php" class="btn btn-secondary">Mon profil</a>
+                            <a href="/mangasan/public/account.php?tab=profil" class="btn btn-secondary">Mon profil</a>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </section>
+
+    <?php if (isLoggedIn()): ?>
+        <nav class="hero-dock-tabs container" aria-label="Accès rapides utilisateur">
+            <div class="hero-tabs">
+                <a href="/mangasan/public/account.php?tab=fiches" class="hero-tab">Mes fiches</a>
+                <?php if ($editionSection): ?>
+                    <a href="#edition" class="hero-tab is-current">Sélection</a>
+                <?php endif; ?>
+                <?php if ($canDisplayActiveEditionRanking): ?>
+                    <a href="#ranking" class="hero-tab">Classement</a>
+                <?php endif; ?>
+                <a href="/mangasan/public/account.php?tab=profil" class="hero-tab">Mon compte</a>
+                <?php if (isAdmin()): ?>
+                    <a href="/mangasan/admin/index.php" class="hero-tab hero-tab-admin">Administration</a>
+                <?php endif; ?>
+            </div>
+        </nav>
+    <?php endif; ?>
 
     <?php if ($editionSection): ?>
         <section class="section featured-section" id="edition">
@@ -601,40 +619,20 @@ require_once __DIR__ . '/../includes/header.php';
                                 <h3><?php echo e((string) $rankingItem['title']); ?></h3>
 
                                 <div class="ranking-stats">
-                                    <?php $rankingMethod = (string) ($rankingItem['ranking_method'] ?? ($activeEdition['ranking_calculation_method'] ?? 'average_score')); ?>
-
                                     <?php if ($rankingItem['reviews_count'] > 0): ?>
-                                        <?php if ($rankingMethod === 'rank_points'): ?>
-                                            <div class="ranking-stat">
-                                                <span>Points</span>
-                                                <strong><?php echo (int) ($rankingItem['total_points'] ?? 0); ?> pts</strong>
-                                            </div>
-
-                                            <div class="ranking-stat">
-                                                <span>Rang moyen</span>
-                                                <strong>
-                                                    <?php if ($rankingItem['average_rank'] !== null): ?>
-                                                        <?php echo e(number_format((float) $rankingItem['average_rank'], 2, '.', '')); ?>
-                                                    <?php else: ?>
-                                                        —
-                                                    <?php endif; ?>
-                                                </strong>
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="ranking-stat">
-                                                <span>Moyenne</span>
-                                                <strong><?php echo e(number_format((float) $rankingItem['average_score'], 2, '.', '')); ?> / <?php echo e((string) $activeEdition['score_max']); ?></strong>
-                                            </div>
-                                        <?php endif; ?>
+                                        <div class="ranking-stat">
+                                            <span>Moyenne</span>
+                                            <strong><?php echo e(number_format((float) $rankingItem['average_score'], 2, '.', '')); ?> / <?php echo e((string) $activeEdition['score_max']); ?></strong>
+                                        </div>
                                     <?php else: ?>
                                         <div class="ranking-stat">
                                             <span>État</span>
-                                            <strong><?php echo $rankingMethod === 'rank_points' ? 'Non classé' : 'Sans note'; ?></strong>
+                                            <strong>Sans note</strong>
                                         </div>
                                     <?php endif; ?>
 
                                     <div class="ranking-stat">
-                                        <span>Fiches</span>
+                                        <span>Reviews</span>
                                         <strong><?php echo (int) $rankingItem['reviews_count']; ?></strong>
                                     </div>
                                 </div>

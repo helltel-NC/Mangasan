@@ -592,3 +592,8 @@ ADD COLUMN review_form_type varchar(100) NOT NULL DEFAULT 'classic_score' AFTER 
 
 ALTER TABLE reviews
 ADD COLUMN review_data longtext DEFAULT NULL AFTER review_text;
+
+UPDATE editions
+SET review_form_type = 'mangasan_reading_sheet_v1',
+    ranking_calculation_method = 'rank_points'
+WHERE is_active = 1;

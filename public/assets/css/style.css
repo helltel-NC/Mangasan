@@ -354,3 +354,401 @@ textarea {
         align-items: flex-start;
     }
 }
+
+.hero {
+    position: relative;
+}
+
+.hero-dock-tabs {
+    position: relative;
+    z-index: 4;
+    margin-top: -38px;
+    margin-bottom: -2px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.hero-tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 0 10px;
+    scrollbar-width: none;
+}
+
+.hero-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.hero-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    min-width: 132px;
+    padding: 10px 22px 9px;
+    margin-right: -8px;
+    color: var(--color-text-soft);
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    background: linear-gradient(180deg, #202020 0%, #141414 100%);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-bottom: 0;
+    border-radius: 15px 15px 0 0;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 -8px 24px rgba(0, 0, 0, 0.18);
+    transform: translateY(5px);
+    transition:
+        transform var(--transition-fast),
+        color var(--transition-fast),
+        background var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.hero-tab::before,
+.hero-tab::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+}
+
+.hero-tab::before {
+    left: -18px;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom-right-radius: 16px;
+    box-shadow: 7px 7px 0 #141414;
+}
+
+.hero-tab::after {
+    right: -18px;
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom-left-radius: 16px;
+    box-shadow: -7px 7px 0 #141414;
+}
+
+.hero-tab:hover,
+.hero-tab:focus-visible {
+    z-index: 2;
+    color: var(--color-text);
+    transform: translateY(1px);
+    border-color: color-mix(in srgb, var(--color-primary) 36%, rgba(255,255,255,0.1));
+    background: linear-gradient(180deg, #262626 0%, #171717 100%);
+    outline: none;
+}
+
+.hero-tab.is-current {
+    z-index: 3;
+    color: var(--color-text);
+    transform: translateY(0);
+    background: linear-gradient(180deg, #1d1d1d 0%, var(--color-background) 100%);
+    border-color: color-mix(in srgb, var(--color-primary) 55%, rgba(255,255,255,0.12));
+    box-shadow:
+        inset 0 2px 0 var(--color-primary),
+        0 -10px 26px rgba(0, 0, 0, 0.24),
+        0 0 22px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.hero-tab.is-current::before {
+    box-shadow: 7px 7px 0 var(--color-background);
+}
+
+.hero-tab.is-current::after {
+    box-shadow: -7px 7px 0 var(--color-background);
+}
+
+.hero-tab-admin {
+    margin-left: 14px;
+}
+
+.hero-tab-admin.is-current,
+.hero-tab-admin:hover,
+.hero-tab-admin:focus-visible {
+    border-color: color-mix(in srgb, var(--color-accent) 55%, rgba(255,255,255,0.12));
+}
+
+@media (max-width: 900px) {
+    .hero-dock-tabs {
+        margin-top: -26px;
+        width: min(94%, var(--container-width));
+    }
+
+    .hero-tab {
+        min-width: 116px;
+        padding-inline: 16px;
+        font-size: 0.92rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .hero-dock-tabs {
+        margin-top: -18px;
+    }
+
+    .hero-tabs {
+        padding-inline: 0;
+    }
+
+    .hero-tab {
+        min-width: 105px;
+        min-height: 38px;
+        padding: 8px 14px 7px;
+        font-size: 0.86rem;
+        border-radius: 12px 12px 0 0;
+    }
+}
+
+/* Manga San page transition - stable */
+body.is-transitioning {
+    overflow: hidden;
+}
+
+.manga-page-transition {
+    --transition-main: var(--color-primary);
+    --transition-accent: var(--color-accent);
+
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at center,
+            color-mix(in srgb, var(--transition-main) 20%, transparent),
+            transparent 34%
+        ),
+        rgba(0, 0, 0, 0.92);
+    transition: opacity 0.24s ease, visibility 0s linear 0.24s;
+}
+
+.manga-page-transition.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.24s ease, visibility 0s;
+}
+
+.manga-page-transition:not(.is-visible) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.manga-transition-backdrop {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            color-mix(in srgb, var(--transition-main) 16%, transparent),
+            transparent
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.025) 0,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px,
+            transparent 18px
+        );
+    transform: translateX(-100%);
+    opacity: 0.9;
+}
+
+.manga-page-transition.is-visible .manga-transition-backdrop {
+    animation: mangaBackdropScan 1.05s ease forwards;
+}
+
+.manga-transition-light {
+    position: absolute;
+    width: 40vw;
+    height: 140vh;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.28),
+        color-mix(in srgb, var(--transition-main) 32%, transparent),
+        transparent
+    );
+    transform: translateX(80vw) rotate(18deg);
+    opacity: 0;
+}
+
+.manga-page-transition.is-opening .manga-transition-light {
+    animation: mangaLightSweep 0.52s ease forwards;
+}
+
+.manga-transition-door {
+    position: relative;
+    width: min(360px, 68vw);
+    aspect-ratio: 1.78 / 1;
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    background: linear-gradient(135deg, #ffffff 0%, #f6f6f6 52%, #dedede 100%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-left: 5px solid var(--transition-main);
+    border-radius: 18px;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--transition-main) 25%, transparent),
+        0 28px 80px rgba(0, 0, 0, 0.6),
+        0 0 48px color-mix(in srgb, var(--transition-main) 22%, transparent);
+    color: #050505;
+    transform: scale(0.82);
+    opacity: 0;
+    transform-origin: left center;
+    will-change: transform, opacity;
+}
+
+.manga-page-transition.is-visible .manga-transition-door {
+    animation: mangaDoorAppear 0.28s ease forwards;
+}
+
+.manga-page-transition.is-rotating .manga-transition-door {
+    transform: scale(1) rotate(90deg);
+    transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.manga-page-transition.is-opening .manga-transition-door {
+    transform: translateX(-42vw) rotate(90deg) rotateY(-58deg) scale(1.08);
+    opacity: 0.96;
+    transition: transform 0.56s cubic-bezier(0.5, 0, 0.1, 1), opacity 0.3s ease;
+}
+
+.manga-transition-logo-text {
+    display: block;
+    font-size: clamp(4rem, 13vw, 8.2rem);
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: #050505;
+    text-shadow: 2px 2px 0 color-mix(in srgb, var(--transition-main) 35%, transparent);
+}
+
+.manga-transition-logo-image {
+    display: none;
+    max-width: 86%;
+    max-height: 82%;
+    object-fit: contain;
+}
+
+.manga-transition-logo-image.is-active {
+    display: block;
+}
+
+.manga-transition-logo-image.is-active + .manga-transition-logo-text,
+.manga-transition-door.has-image .manga-transition-logo-text {
+    display: none;
+}
+
+.manga-transition-caption {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(48px, 10vh, 92px);
+    transform: translateX(-50%) translateY(10px);
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0;
+}
+
+.manga-page-transition.is-visible .manga-transition-caption {
+    opacity: 0.82;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity 0.24s ease 0.14s, transform 0.24s ease 0.14s;
+}
+
+body.manga-page-enter main {
+    animation: mangaPageEnter 0.38s ease both;
+}
+
+@keyframes mangaDoorAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.82);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes mangaBackdropScan {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes mangaLightSweep {
+    0% {
+        opacity: 0;
+        transform: translateX(80vw) rotate(18deg);
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-80vw) rotate(18deg);
+    }
+}
+
+@keyframes mangaPageEnter {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.985);
+        filter: blur(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .manga-transition-door {
+        width: min(280px, 78vw);
+    }
+
+    .manga-page-transition.is-opening .manga-transition-door {
+        transform: translateX(-52vw) rotate(90deg) rotateY(-52deg) scale(1.02);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .manga-page-transition,
+    .manga-transition-door,
+    .manga-transition-backdrop,
+    .manga-transition-light,
+    .manga-transition-caption,
+    body.manga-page-enter main {
+        animation: none !important;
+        transition: none !important;
+    }
+}

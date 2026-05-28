@@ -1,19 +1,384 @@
+/* Page compte / espace élève avec onglets internes */
+
+.account-page .account-hero {
+    border-bottom: 1px solid rgba(229, 9, 20, 0.5);
+}
+
+.account-hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: 32px;
+    align-items: center;
+    padding: 48px 0;
+}
+
+.account-hero-text {
+    max-width: 760px;
+}
+
+.account-identity-card {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+    background: linear-gradient(180deg, #191919 0%, #111111 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.account-identity-card div {
+    display: grid;
+    gap: 5px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+}
+
+.account-identity-card span,
+.account-dashboard-title p,
+.account-rank-card span,
+.account-side-card .section-kicker {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.account-identity-card strong {
+    color: var(--color-text);
+}
+
+.account-tabs-shell {
+    position: relative;
+    z-index: 4;
+    margin-top: -42px;
+    border-bottom: 1px solid var(--color-primary);
+}
+
+.account-tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.account-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.account-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    min-width: 148px;
+    padding: 10px 24px 9px;
+    margin-right: -8px;
+    color: var(--color-text-soft);
+    text-decoration: none;
+    font-weight: 800;
+    background: linear-gradient(180deg, #202020 0%, #141414 100%);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-bottom: 0;
+    border-radius: 15px 15px 0 0;
+    transform: translateY(5px);
+    transition: var(--transition-fast);
+}
+
+.account-tab:hover,
+.account-tab:focus-visible {
+    z-index: 2;
+    color: var(--color-text);
+    transform: translateY(1px);
+    border-color: color-mix(in srgb, var(--color-primary) 36%, rgba(255, 255, 255, 0.1));
+    background: linear-gradient(180deg, #262626 0%, #171717 100%);
+    outline: none;
+}
+
+.account-tab.is-current {
+    z-index: 3;
+    color: var(--color-text);
+    transform: translateY(0);
+    background: linear-gradient(180deg, #1d1d1d 0%, var(--color-background) 100%);
+    border-color: color-mix(in srgb, var(--color-primary) 55%, rgba(255, 255, 255, 0.12));
+    box-shadow:
+        inset 0 2px 0 var(--color-primary),
+        0 -10px 26px rgba(0, 0, 0, 0.24),
+        0 0 22px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.account-tabs-content {
+    padding-top: 48px;
+}
+
+.account-tab-panel.is-hidden {
+    display: none;
+}
+
+.account-tab-panel.is-active {
+    display: block;
+}
+
+.account-section-heading {
+    margin-bottom: 22px;
+}
+
+.account-dashboard-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr) minmax(220px, 0.6fr);
+    gap: 16px;
+    align-items: stretch;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.account-dashboard-title,
+.account-progress-card,
+.account-rank-card {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+}
+
+.account-dashboard-title h3 {
+    margin: 0;
+    font-size: clamp(1.35rem, 2vw, 2rem);
+    line-height: 1.1;
+}
+
+.account-dashboard-title span,
+.account-progress-card p,
+.account-empty-text,
+.account-info-list {
+    color: var(--color-text-muted);
+}
+
+.account-progress-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.account-progress-head strong {
+    font-size: 1.1rem;
+}
+
+.account-progress-head span {
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.account-progress-bar {
+    height: 10px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+}
+
+.account-progress-bar span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
+    border-radius: inherit;
+}
+
+.account-rank-card strong {
+    font-size: 1rem;
+}
+
+.account-review-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 14px;
+}
+
+.account-review-card {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 16px;
+    align-items: stretch;
+    padding: 14px;
+    background: linear-gradient(180deg, #191919 0%, #111111 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.account-review-card.is-editable {
+    border-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
+}
+
+.account-review-cover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 128px;
+    overflow: hidden;
+    background: #151515;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    text-align: center;
+    font-size: 0.78rem;
+}
+
+.account-review-cover img {
+    width: 100%;
+    height: 100%;
+    min-height: 128px;
+    object-fit: cover;
+}
+
+.account-review-content {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+}
+
+.account-review-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.account-status,
+.account-rank {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.account-status.is-editable {
+    background: rgba(20, 180, 90, 0.16);
+    color: #c9ffdf;
+}
+
+.account-status.is-locked {
+    background: rgba(229, 9, 20, 0.16);
+    color: #ffd5d8;
+}
+
+.account-status.is-todo {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-text-muted);
+}
+
+.account-review-content h3 {
+    margin: 0;
+    font-size: 1.06rem;
+}
+
+.account-review-content p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.account-review-content .btn {
+    width: fit-content;
+    margin-top: 2px;
+}
+
+.account-ranking-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.2fr) minmax(220px, 0.7fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.account-side-card {
+    padding: 18px;
+}
+
+.account-side-card h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.account-ranking-list {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.account-ranking-list li {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+}
+
+.account-ranking-list span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    border-radius: var(--radius-sm);
+    background: rgba(229, 9, 20, 0.14);
+    color: var(--color-text);
+    font-weight: 800;
+}
+
+.account-ranking-list a {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.account-ranking-list a:hover {
+    color: var(--color-primary-hover);
+}
+
+.account-info-list {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0 0;
+    padding-left: 18px;
+}
+
 .account-layout {
     display: grid;
-    grid-template-columns: minmax(0, 720px);
+    grid-template-columns: minmax(0, 920px);
     justify-content: center;
 }
 
 .account-panel {
     padding: 24px;
     background: linear-gradient(180deg, #191919 0%, #111111 100%);
-    border: 1px solid #2a2a2a;
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
 }
 
 .account-form {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
 }
 
@@ -22,12 +387,59 @@
     gap: 8px;
 }
 
+.account-field-wide {
+    grid-column: 1 / -1;
+}
+
 .account-field label {
     font-weight: 700;
 }
 
+.account-field input[readonly] {
+    opacity: 0.82;
+    cursor: not-allowed;
+}
+
 .account-actions {
+    grid-column: 1 / -1;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+@media (max-width: 1050px) {
+    .account-dashboard-card,
+    .account-ranking-layout,
+    .account-hero-inner {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .account-form,
+    .account-review-card {
+        grid-template-columns: 1fr;
+    }
+
+    .account-review-cover {
+        min-height: 220px;
+    }
+
+    .account-review-cover img {
+        min-height: 220px;
+    }
+
+    .account-review-content .btn {
+        width: 100%;
+    }
+
+    .account-tabs-shell {
+        margin-top: -28px;
+    }
+
+    .account-tab {
+        min-width: 125px;
+        padding-inline: 16px;
+        font-size: 0.9rem;
+    }
 }
