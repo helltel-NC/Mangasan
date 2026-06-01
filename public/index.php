@@ -245,6 +245,7 @@ $heroBackgroundValue = trim((string) ($siteSettings['hero_background_value'] ?? 
 $heroLoginPosition = (string) ($siteSettings['hero_login_position'] ?? 'right');
 $heroLoginPosition = in_array($heroLoginPosition, ['left', 'right'], true) ? $heroLoginPosition : 'right';
 $homepageIntro = trim((string) ($siteSettings['homepage_intro'] ?? ''));
+$hideHeroText = !empty($siteSettings['hide_hero_text']);
 
 $heroTitle = !empty($heroSection['title'])
     ? trim((string) $heroSection['title'])
@@ -316,6 +317,13 @@ require_once __DIR__ . '/../includes/header.php';
     .page-home .hero-description {
         color: <?php echo e($heroTextColor); ?>;
     }
+
+    <?php if ($hideHeroText): ?>
+    .page-home .hero-title,
+    .page-home .hero-description {
+        display: none;
+    }
+    <?php endif; ?>
 </style>
 
 <main class="page-home">
@@ -386,12 +394,14 @@ require_once __DIR__ . '/../includes/header.php';
                     <p class="hero-kicker"><?php echo e($heroKicker); ?></p>
                 <?php endif; ?>
 
-                <?php if ($heroTitle !== ''): ?>
-                    <h1 class="hero-title"><?php echo e($heroTitle); ?></h1>
-                <?php endif; ?>
+                <?php if (!$hideHeroText): ?>
+                    <?php if ($heroTitle !== ''): ?>
+                        <h1 class="hero-title"><?php echo e($heroTitle); ?></h1>
+                    <?php endif; ?>
 
-                <?php if ($heroDescription !== ''): ?>
-                    <p class="hero-description"><?php echo renderMultilineText($heroDescription); ?></p>
+                    <?php if ($heroDescription !== ''): ?>
+                        <p class="hero-description"><?php echo renderMultilineText($heroDescription); ?></p>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
 
@@ -417,35 +427,17 @@ require_once __DIR__ . '/../includes/header.php';
                             <?php if (isAdmin()): ?>
                                 <a href="/mangasan/admin/index.php" class="btn btn-primary">Administration</a>
                             <?php else: ?>
-                                <a href="/mangasan/public/account.php?tab=fiches" class="btn btn-primary">Mes fiches</a>
+                                <a href="/mangasan/public/index.php" class="btn btn-primary">Espace membre</a>
                             <?php endif; ?>
 
                             <a href="/mangasan/actions/logout.php" class="btn btn-secondary">Déconnexion</a>
-                            <a href="/mangasan/public/account.php?tab=profil" class="btn btn-secondary">Mon profil</a>
+                            <a href="/mangasan/public/account.php" class="btn btn-secondary">Mon profil</a>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </section>
-
-    <?php if (isLoggedIn()): ?>
-        <nav class="hero-dock-tabs container" aria-label="Accès rapides utilisateur">
-            <div class="hero-tabs">
-                <a href="/mangasan/public/account.php?tab=fiches" class="hero-tab">Mes fiches</a>
-                <?php if ($editionSection): ?>
-                    <a href="#edition" class="hero-tab is-current">Sélection</a>
-                <?php endif; ?>
-                <?php if ($canDisplayActiveEditionRanking): ?>
-                    <a href="#ranking" class="hero-tab">Classement</a>
-                <?php endif; ?>
-                <a href="/mangasan/public/account.php?tab=profil" class="hero-tab">Mon compte</a>
-                <?php if (isAdmin()): ?>
-                    <a href="/mangasan/admin/index.php" class="hero-tab hero-tab-admin">Administration</a>
-                <?php endif; ?>
-            </div>
-        </nav>
-    <?php endif; ?>
 
     <?php if ($editionSection): ?>
         <section class="section featured-section" id="edition">

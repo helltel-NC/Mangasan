@@ -597,3 +597,8 @@ UPDATE editions
 SET review_form_type = 'mangasan_reading_sheet_v1',
     ranking_calculation_method = 'rank_points'
 WHERE is_active = 1;
+
+
+ALTER TABLE site_settings
+ADD COLUMN hide_hero_text TINYINT(1) NOT NULL DEFAULT 0
+AFTER hero_text_color;

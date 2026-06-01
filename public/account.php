@@ -188,7 +188,7 @@ if ($activeEdition && $activeEditionMangas) {
         $hubStarted = $hubReview !== null;
         $hubReviewUrl = '/mangasan/public/review_edit.php?edition_id=' . (int) $activeEdition['id'] . '&manga_id=' . (int) $hubManga['id'];
         $hubReviewLabel = !$hubStarted
-            ? 'Créer ma fiche'
+            ? 'Remplir ma fiche'
             : ($hubLocked ? 'Consulter' : 'Modifier');
         $hubStatusLabel = !$hubStarted
             ? 'Non commencée'

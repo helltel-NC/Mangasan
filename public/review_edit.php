@@ -216,7 +216,15 @@ require_once __DIR__ . '/../includes/header.php';
                     <p class="review-heading-subtitle"><?php echo e((string) $context['manga_subtitle']); ?></p>
                 <?php endif; ?>
             </div>
+            <div class="review-top-actions">
+                <a href="/mangasan/public/account.php?tab=fiches" class="btn secondary">
+                    ← Retour à mes fiches
+                </a>
 
+                <a href="/mangasan/public/index.php#edition" class="btn secondary">
+                    Retour à la sélection
+                </a>
+            </div>
             <div class="review-heading-meta">
                 <span><?php echo e((string) $context['edition_title']); ?> - <?php echo e((string) $context['edition_year']); ?></span>
                 <strong><?php echo $existingReview !== null ? ($isLocked ? 'Consultation' : 'Modification') : 'Création'; ?></strong>
@@ -310,7 +318,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                                     <div class="review-field">
                                         <label for="manga_author">Auteur</label>
-                                        <input type="text" id="manga_author" name="manga_author" value="<?php echo e(reviewDataValue($reviewData, 'manga_author', (string) ($context['manga_author'] ?? ''))); ?>" <?php echo $isLocked ? 'disabled' : 'required'; ?>>
+                                        <input type="text" id="manga_author" name="manga_author" value="<?php echo e(reviewDataValue($reviewData, 'manga_author', (string) ($context['manga_author'] ?? ''))); ?>" <?php echo $isLocked ? 'disabled' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -337,17 +345,17 @@ require_once __DIR__ . '/../includes/header.php';
 
                                 <div class="review-field">
                                     <label for="story_frame">Le cadre de l’histoire</label>
-                                    <textarea id="story_frame" name="story_frame" placeholder="Exemples : époque, pays, monde réel, monde imaginaire, lycée, futur, passé..." <?php echo $isLocked ? 'disabled' : 'required'; ?>><?php echo e(reviewDataValue($reviewData, 'story_frame')); ?></textarea>
+                                    <textarea id="story_frame" name="story_frame" placeholder="Exemples : époque, pays, monde réel, monde imaginaire, lycée, futur, passé..." <?php echo $isLocked ? 'disabled' : ''; ?>><?php echo e(reviewDataValue($reviewData, 'story_frame')); ?></textarea>
                                 </div>
 
                                 <div class="review-field">
                                     <label for="story_theme">Le thème général</label>
-                                    <textarea id="story_theme" name="story_theme" placeholder="Exemples : intrigue, quête initiatique, historique, action, fantastique, sociétal..." <?php echo $isLocked ? 'disabled' : 'required'; ?>><?php echo e(reviewDataValue($reviewData, 'story_theme')); ?></textarea>
+                                    <textarea id="story_theme" name="story_theme" placeholder="Exemples : intrigue, quête initiatique, historique, action, fantastique, sociétal..." <?php echo $isLocked ? 'disabled' : ''; ?>><?php echo e(reviewDataValue($reviewData, 'story_theme')); ?></textarea>
                                 </div>
 
                                 <div class="review-field">
                                     <label for="main_characters">Les personnages principaux</label>
-                                    <textarea id="main_characters" name="main_characters" placeholder="Exemples : identité, personnalité, rôle dans l’histoire, évolution..." <?php echo $isLocked ? 'disabled' : 'required'; ?>><?php echo e(reviewDataValue($reviewData, 'main_characters')); ?></textarea>
+                                    <textarea id="main_characters" name="main_characters" placeholder="Exemples : identité, personnalité, rôle dans l’histoire, évolution..." <?php echo $isLocked ? 'disabled' : ''; ?>><?php echo e(reviewDataValue($reviewData, 'main_characters')); ?></textarea>
                                 </div>
 
                                 <div class="review-field">
@@ -366,12 +374,12 @@ require_once __DIR__ . '/../includes/header.php';
 
                                 <div class="review-field">
                                     <label for="art_graphism">Graphisme</label>
-                                    <textarea id="art_graphism" name="art_graphism" placeholder="Exemples : style, ambiance, détails, équilibre texte / image, lisibilité..." <?php echo $isLocked ? 'disabled' : 'required'; ?>><?php echo e(reviewDataValue($reviewData, 'art_graphism')); ?></textarea>
+                                    <textarea id="art_graphism" name="art_graphism" placeholder="Exemples : style, ambiance, détails, équilibre texte / image, lisibilité..." <?php echo $isLocked ? 'disabled' : ''; ?>><?php echo e(reviewDataValue($reviewData, 'art_graphism')); ?></textarea>
                                 </div>
 
                                 <div class="review-field">
                                     <label for="art_bubbles">Les bulles</label>
-                                    <textarea id="art_bubbles" name="art_bubbles" placeholder="Exemples : bulles faciles à suivre, bien placées, lisibles, rythme de lecture..." <?php echo $isLocked ? 'disabled' : 'required'; ?>><?php echo e(reviewDataValue($reviewData, 'art_bubbles')); ?></textarea>
+                                    <textarea id="art_bubbles" name="art_bubbles" placeholder="Exemples : bulles faciles à suivre, bien placées, lisibles, rythme de lecture..." <?php echo $isLocked ? 'disabled' : ''; ?>><?php echo e(reviewDataValue($reviewData, 'art_bubbles')); ?></textarea>
                                 </div>
 
                                 <div class="review-field">
@@ -400,7 +408,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                                 <div class="review-field">
                                     <label for="appreciation">Mon appréciation</label>
-                                    <textarea id="appreciation" name="appreciation" placeholder="Donne ton avis général sur ce manga." <?php echo $isLocked ? 'disabled' : 'required'; ?>><?php echo e(reviewDataValue($reviewData, 'appreciation')); ?></textarea>
+                                    <textarea id="appreciation" name="appreciation" placeholder="Donne ton avis général sur ce manga." <?php echo $isLocked ? 'disabled' : ''; ?>><?php echo e(reviewDataValue($reviewData, 'appreciation')); ?></textarea>
                                 </div>
                             </div>
 
@@ -409,7 +417,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                                 <div class="review-field">
                                     <label for="personal_rank">Je classe ce manga à la position</label>
-                                    <input type="number" id="personal_rank" name="personal_rank" min="1" max="<?php echo $editionMangaCount; ?>" value="<?php echo e((string) $personalRank); ?>" <?php echo $isLocked ? 'disabled' : 'required'; ?>>
+                                    <input type="number" id="personal_rank" name="personal_rank" min="1" max="<?php echo $editionMangaCount; ?>" value="<?php echo e((string) $personalRank); ?>" <?php echo $isLocked ? 'disabled' : ''; ?>>
                                     <small>1 = ton manga préféré de l’édition. Maximum : <?php echo $editionMangaCount; ?>.</small>
                                 </div>
                             </div>
@@ -420,22 +428,22 @@ require_once __DIR__ . '/../includes/header.php';
                                 <div class="review-grid">
                                     <div class="review-field">
                                         <label for="story_score">Histoire</label>
-                                        <input type="number" id="story_score" name="story_score" min="0" max="<?php echo e((string) $context['score_max']); ?>" step="0.01" value="<?php echo e((string) $storyScore); ?>" <?php echo $isLocked ? 'disabled' : 'required'; ?>>
+                                        <input type="number" id="story_score" name="story_score" min="0" max="<?php echo e((string) $context['score_max']); ?>" step="0.01" value="<?php echo e((string) $storyScore); ?>" <?php echo $isLocked ? 'disabled' : ''; ?>>
                                     </div>
 
                                     <div class="review-field">
                                         <label for="art_score">Style de dessin</label>
-                                        <input type="number" id="art_score" name="art_score" min="0" max="<?php echo e((string) $context['score_max']); ?>" step="0.01" value="<?php echo e((string) $artScore); ?>" <?php echo $isLocked ? 'disabled' : 'required'; ?>>
+                                        <input type="number" id="art_score" name="art_score" min="0" max="<?php echo e((string) $context['score_max']); ?>" step="0.01" value="<?php echo e((string) $artScore); ?>" <?php echo $isLocked ? 'disabled' : ''; ?>>
                                     </div>
 
                                     <div class="review-field">
                                         <label for="universe_score">Univers</label>
-                                        <input type="number" id="universe_score" name="universe_score" min="0" max="<?php echo e((string) $context['score_max']); ?>" step="0.01" value="<?php echo e((string) $universeScore); ?>" <?php echo $isLocked ? 'disabled' : 'required'; ?>>
+                                        <input type="number" id="universe_score" name="universe_score" min="0" max="<?php echo e((string) $context['score_max']); ?>" step="0.01" value="<?php echo e((string) $universeScore); ?>" <?php echo $isLocked ? 'disabled' : ''; ?>>
                                     </div>
 
                                     <div class="review-field">
                                         <label for="message_score">Messages / thèmes</label>
-                                        <input type="number" id="message_score" name="message_score" min="0" max="<?php echo e((string) $context['score_max']); ?>" step="0.01" value="<?php echo e((string) $messageScore); ?>" <?php echo $isLocked ? 'disabled' : 'required'; ?>>
+                                        <input type="number" id="message_score" name="message_score" min="0" max="<?php echo e((string) $context['score_max']); ?>" step="0.01" value="<?php echo e((string) $messageScore); ?>" <?php echo $isLocked ? 'disabled' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -450,7 +458,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                                 <div class="review-field">
                                     <label for="personal_rank">Rang personnel</label>
-                                    <input type="number" id="personal_rank" name="personal_rank" min="1" max="<?php echo $editionMangaCount; ?>" value="<?php echo e((string) $personalRank); ?>" <?php echo $isLocked ? 'disabled' : 'required'; ?>>
+                                    <input type="number" id="personal_rank" name="personal_rank" min="1" max="<?php echo $editionMangaCount; ?>" value="<?php echo e((string) $personalRank); ?>" <?php echo $isLocked ? 'disabled' : ''; ?>>
                                     <small>1 = ton manga préféré de l’édition. Maximum : <?php echo $editionMangaCount; ?>.</small>
                                 </div>
                             </div>
@@ -468,7 +476,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <?php if (!$isLocked): ?>
                             <div class="review-form-actions">
                                 <button type="submit" class="btn btn-primary">
-                                    <?php echo $existingReview !== null ? 'Enregistrer les modifications' : 'Créer ma fiche'; ?>
+                                    <?php echo $existingReview !== null ? 'Enregistrer les modifications' : 'Remplir ma fiche'; ?>
                                 </button>
                                 <a href="/mangasan/public/index.php" class="btn btn-secondary">Retour</a>
                             </div>

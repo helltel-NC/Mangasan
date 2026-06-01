@@ -25,6 +25,7 @@ function getSiteThemeSettings(PDO $pdo): array
             hero_background_value,
             homepage_intro,
             hero_text_color,
+            hide_hero_text,
             hero_login_position
          FROM site_settings
          ORDER BY id ASC
@@ -46,6 +47,7 @@ function getSiteThemeSettings(PDO $pdo): array
         'hero_background_type' => (string) ($settings['hero_background_type'] ?? 'image'),
         'hero_background_value' => trim((string) ($settings['hero_background_value'] ?? '')),
         'homepage_intro' => trim((string) ($settings['homepage_intro'] ?? '')),
+        'hide_hero_text' => !empty($settings['hide_hero_text']),
         'hero_login_position' => in_array(($settings['hero_login_position'] ?? 'right'), ['left', 'right'], true)
             ? (string) $settings['hero_login_position']
             : 'right'
@@ -60,6 +62,14 @@ function buildThemeStyleTag(array $theme): string
     $textColor = htmlspecialchars($theme['text_color'], ENT_QUOTES, 'UTF-8');
     $accentColor = htmlspecialchars($theme['accent_color'], ENT_QUOTES, 'UTF-8');
     $heroTextColor = htmlspecialchars($theme['hero_text_color'], ENT_QUOTES, 'UTF-8');
+    $hideHeroTextCss = !empty($theme['hide_hero_text'])
+        ? "
+    .page-home .hero-title,
+    .page-home .hero-description {
+        display: none;
+    }
+"
+        : '';
 
     return <<<HTML
 <style>
@@ -76,6 +86,6 @@ function buildThemeStyleTag(array $theme): string
     .hero-description {
         color: {$heroTextColor};
     }
-</style>
+{$hideHeroTextCss}</style>
 HTML;
 }

@@ -54,19 +54,43 @@ function getTargetAudiencesFromPost(): array
     return $filtered;
 }
 
+
+function getOptionalPersonalRank(): int
+{
+    $rawRank = $_POST['personal_rank'] ?? '';
+
+    if (is_array($rawRank)) {
+        return -1;
+    }
+
+    $rawRank = trim((string) $rawRank);
+
+    if ($rawRank === '') {
+        return 0;
+    }
+
+    $rank = filter_var($rawRank, FILTER_VALIDATE_INT);
+
+    if ($rank === false) {
+        return -1;
+    }
+
+    return (int) $rank;
+}
+
 function buildReadingSheetData(array $context): array
 {
     return [
         'form_type' => 'mangasan_reading_sheet_v1',
         'manga_title' => (string) $context['manga_title'],
-        'manga_author' => cleanPostText('manga_author', 255),
+        'manga_author' => cleanPostText('manga_author', 255) ?? (!empty($context['manga_author']) ? (string) $context['manga_author'] : null),
         'target_audiences' => getTargetAudiencesFromPost(),
         'genres_themes' => cleanPostText('genres_themes', 500),
         'story_frame' => cleanPostText('story_frame'),
         'story_theme' => cleanPostText('story_theme'),
         'main_characters' => cleanPostText('main_characters'),
         'story_opinion' => cleanPostText('story_opinion'),
-        'illustrator' => cleanPostText('illustrator', 255),
+        'illustrator' => cleanPostText('illustrator', 255) ?? (!empty($context['manga_illustrator']) ? (string) $context['manga_illustrator'] : null),
         'art_graphism' => cleanPostText('art_graphism'),
         'art_bubbles' => cleanPostText('art_bubbles'),
         'art_opinion' => cleanPostText('art_opinion'),
@@ -79,27 +103,9 @@ function buildReadingSheetData(array $context): array
 
 function validateReadingSheetData(array $reviewData, int $editionId, int $mangaId): void
 {
-    $requiredFields = [
-        'manga_author' => 'Auteur',
-        'story_frame' => 'Cadre de l’histoire',
-        'story_theme' => 'Thème général',
-        'main_characters' => 'Personnages principaux',
-        'art_graphism' => 'Graphisme',
-        'art_bubbles' => 'Les bulles',
-        'appreciation' => 'Mon appréciation'
-    ];
-
-    foreach ($requiredFields as $key => $label) {
-        if (empty($reviewData[$key])) {
-            setFlashMessage('error', 'Le champ "' . $label . '" est obligatoire.');
-            redirectToReviewPage($editionId, $mangaId);
-        }
-    }
-
-    if (empty($reviewData['target_audiences'])) {
-        setFlashMessage('error', 'Le public ciblé est obligatoire.');
-        redirectToReviewPage($editionId, $mangaId);
-    }
+    // La fiche Manga San doit pouvoir être sauvegardée partiellement.
+    // Les champs vides sont acceptés : l'élève peut revenir compléter sa fiche plus tard.
+    // La validation stricte est donc volontairement désactivée pour ce modèle.
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -109,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $editionId = filter_input(INPUT_POST, 'edition_id', FILTER_VALIDATE_INT);
 $mangaId = filter_input(INPUT_POST, 'manga_id', FILTER_VALIDATE_INT);
-$personalRank = filter_input(INPUT_POST, 'personal_rank', FILTER_VALIDATE_INT);
+$personalRank = getOptionalPersonalRank();
 
 if (!$editionId || !$mangaId) {
     setFlashMessage('error', 'Création de fiche de lecture invalide.');
@@ -164,14 +170,14 @@ if ((string) $context['edition_status'] !== 'active' || (int) $context['edition_
     redirectToReviewPage($editionId, $mangaId);
 }
 
-if ($personalRank === false || $personalRank === null || $personalRank < 1) {
-    setFlashMessage('error', 'Le rang personnel est obligatoire.');
+if ($personalRank < 0) {
+    setFlashMessage('error', 'Le rang personnel est invalide.');
     redirectToReviewPage($editionId, $mangaId);
 }
 
 $editionMangaCount = max(1, (int) $context['edition_manga_count']);
 
-if ($personalRank > $editionMangaCount) {
+if ($personalRank > 0 && $personalRank > $editionMangaCount) {
     setFlashMessage('error', 'Le rang personnel doit être compris entre 1 et ' . $editionMangaCount . '.');
     redirectToReviewPage($editionId, $mangaId);
 }
@@ -195,23 +201,25 @@ if ($existingReviewStmt->fetch()) {
     redirectToReviewPage($editionId, $mangaId);
 }
 
-$rankConflictStmt = $pdo->prepare(
-    "SELECT id
-     FROM reviews
-     WHERE user_id = :user_id
-       AND edition_id = :edition_id
-       AND personal_rank = :personal_rank
-     LIMIT 1"
-);
-$rankConflictStmt->execute([
-    'user_id' => getCurrentUserId(),
-    'edition_id' => $editionId,
-    'personal_rank' => $personalRank
-]);
+if ($personalRank > 0) {
+    $rankConflictStmt = $pdo->prepare(
+        "SELECT id
+         FROM reviews
+         WHERE user_id = :user_id
+           AND edition_id = :edition_id
+           AND personal_rank = :personal_rank
+         LIMIT 1"
+    );
+    $rankConflictStmt->execute([
+        'user_id' => getCurrentUserId(),
+        'edition_id' => $editionId,
+        'personal_rank' => $personalRank
+    ]);
 
-if ($rankConflictStmt->fetch()) {
-    setFlashMessage('error', 'Tu utilises déjà ce rang personnel pour un autre manga de cette édition.');
-    redirectToReviewPage($editionId, $mangaId);
+    if ($rankConflictStmt->fetch()) {
+        setFlashMessage('error', 'Tu utilises déjà ce rang personnel pour un autre manga de cette édition.');
+        redirectToReviewPage($editionId, $mangaId);
+    }
 }
 
 $reviewFormType = (string) ($context['review_form_type'] ?? 'classic_score');

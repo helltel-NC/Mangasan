@@ -169,6 +169,22 @@ require_once __DIR__ . '/../includes/header.php';
                                 <textarea id="homepage_intro" name="homepage_intro"><?php echo e($settings['homepage_intro']); ?></textarea>
                             </div>
 
+                            <div class="setting-checkbox-row">
+                                <label class="setting-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        name="hide_hero_text"
+                                        value="1"
+                                        <?php echo !empty($settings['hide_hero_text']) ? 'checked' : ''; ?>
+                                    >
+                                    <span>Masquer le titre et la description du hero</span>
+                                </label>
+
+                                <p class="setting-help">
+                                    À utiliser quand l’image ou la vidéo du hero contient déjà le logo / titre.
+                                </p>
+                            </div>
+
                             <div class="admin-field">
                                 <label for="hero_login_position">Position du formulaire de connexion</label>
                                 <select id="hero_login_position" name="hero_login_position">
@@ -223,10 +239,12 @@ require_once __DIR__ . '/../includes/header.php';
 
                         <div class="admin-site-preview-hero" id="previewHero">
                             <div class="admin-site-preview-hero-inner <?php echo $settings['hero_login_position'] === 'left' ? 'is-login-left' : ''; ?>" id="previewHeroInner">
-                                <div class="admin-site-preview-copy">
+                                <div class="admin-site-preview-copy<?php echo !empty($settings['hide_hero_text']) ? ' is-hero-text-hidden' : ''; ?>">
                                     <p class="admin-site-preview-kicker">Mangasan</p>
-                                    <h3 id="previewHeroTitle"><?php echo e($settings['site_title']); ?></h3>
-                                    <p id="previewHeroIntro"><?php echo e($settings['homepage_intro']); ?></p>
+                                    <?php if (empty($settings['hide_hero_text'])): ?>
+                                        <h3 id="previewHeroTitle"><?php echo e($settings['site_title']); ?></h3>
+                                        <p id="previewHeroIntro"><?php echo e($settings['homepage_intro']); ?></p>
+                                    <?php endif; ?>
                                 </div>
 
                                 <div class="admin-site-preview-login" id="previewLoginBox">

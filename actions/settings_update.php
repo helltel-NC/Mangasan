@@ -65,6 +65,7 @@ $heroBackgroundType = trim((string) ($_POST['hero_background_type'] ?? 'image'))
 $heroBackgroundValue = trim((string) ($_POST['hero_background_value'] ?? ''));
 $homepageIntro = trim((string) ($_POST['homepage_intro'] ?? ''));
 $heroLoginPosition = trim((string) ($_POST['hero_login_position'] ?? 'right'));
+$hideHeroText = isset($_POST['hide_hero_text']) ? 1 : 0;
 
 if ($siteTitle === '') {
     setFlashMessage('error', 'Le titre du site est obligatoire.');
@@ -154,6 +155,7 @@ try {
              hero_background_value = :hero_background_value,
              homepage_intro = :homepage_intro,
              hero_text_color = :hero_text_color,
+             hide_hero_text = :hide_hero_text,
              hero_login_position = :hero_login_position,
              updated_by = :updated_by
          WHERE id = :id'
@@ -172,6 +174,7 @@ try {
         'hero_background_value' => $newHeroBackgroundValue,
         'homepage_intro' => $homepageIntro !== '' ? $homepageIntro : null,
         'hero_text_color' => $heroTextColor,
+        'hide_hero_text' => $hideHeroText,
         'hero_login_position' => $heroLoginPosition,
         'updated_by' => getCurrentUserId(),
         'id' => $settingsId
