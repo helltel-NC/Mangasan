@@ -155,16 +155,25 @@ if ($formType !== '') {
 if ($search !== '') {
     $sql .= "
         AND (
-            mangas.title LIKE :search
-            OR users.username LIKE :search
-            OR users.display_name LIKE :search
-            OR users.first_name LIKE :search
-            OR users.last_name LIKE :search
-            OR editions.title LIKE :search
-            OR reviews.review_text LIKE :search
+            mangas.title LIKE :search_manga_title
+            OR users.username LIKE :search_username
+            OR users.display_name LIKE :search_display_name
+            OR users.first_name LIKE :search_first_name
+            OR users.last_name LIKE :search_last_name
+            OR editions.title LIKE :search_edition_title
+            OR reviews.review_text LIKE :search_review_text
         )
     ";
-    $params['search'] = '%' . $search . '%';
+
+    $searchLike = '%' . $search . '%';
+
+    $params['search_manga_title'] = $searchLike;
+    $params['search_username'] = $searchLike;
+    $params['search_display_name'] = $searchLike;
+    $params['search_first_name'] = $searchLike;
+    $params['search_last_name'] = $searchLike;
+    $params['search_edition_title'] = $searchLike;
+    $params['search_review_text'] = $searchLike;
 }
 
 $sql .= " ORDER BY editions.is_active DESC, editions.year DESC, reviews.personal_rank ASC, reviews.updated_at DESC, reviews.id DESC";
@@ -187,6 +196,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                 <div class="admin-toolbar-actions">
                     <a href="/mangasan/admin/index.php" class="btn btn-secondary">Retour dashboard</a>
+                    <a href="/mangasan/admin/rankings.php" class="btn btn-secondary">Classements</a>
                 </div>
             </div>
 

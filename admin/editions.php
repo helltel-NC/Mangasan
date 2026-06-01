@@ -102,6 +102,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                 <div class="admin-toolbar-actions">
                     <a href="/mangasan/admin/index.php" class="btn btn-secondary">Retour dashboard</a>
+                    <a href="/mangasan/admin/rankings.php" class="btn btn-secondary">Classements</a>
                     <a href="/mangasan/admin/edition_edit.php" class="btn btn-primary">Créer une édition</a>
                 </div>
             </div>

@@ -110,6 +110,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                 <div class="hero-actions">
                     <a href="/mangasan/admin/sections.php" class="btn btn-primary">Gérer les sections</a>
+                    <a href="/mangasan/admin/rankings.php" class="btn btn-secondary">Classements</a>
                     <a href="/mangasan/admin/setting.php" class="btn btn-secondary">Paramètres du site</a>
                     <a href="/mangasan/public/index.php" class="btn btn-secondary">Retour au site public</a>
                 </div>
@@ -191,6 +192,19 @@ require_once __DIR__ . '/../includes/header.php';
                 </article>
 
                 <article class="admin-card">
+                    <h3>Classements</h3>
+                    <?php if ($activeEdition): ?>
+                        <p>Édition active : <?php echo e($activeEdition['title']); ?></p>
+                        <p>Année : <?php echo e((string)$activeEdition['year']); ?></p>
+                    <?php else: ?>
+                        <p>Aucune édition active actuellement.</p>
+                    <?php endif; ?>
+                    <div class="admin-card-actions">
+                        <a href="/mangasan/admin/rankings.php" class="btn btn-primary">Ouvrir</a>
+                    </div>
+                </article>
+
+                <article class="admin-card">
                     <h3>Sections du site</h3>
                     <p>Total : <?php echo (int)$stats['sections_total']; ?></p>
                     <p>Visibles : <?php echo (int)$stats['sections_visible']; ?></p>
@@ -264,6 +278,14 @@ require_once __DIR__ . '/../includes/header.php';
                     <p>Consultation, modération, verrouillage et suppression des avis.</p>
                     <div class="admin-card-actions">
                         <a href="/mangasan/admin/reviews.php" class="btn btn-primary">Gérer</a>
+                    </div>
+                </article>
+
+                <article class="admin-card">
+                    <h3>Classements</h3>
+                    <p>Consulter le classement de l’édition active ou d’une ancienne édition.</p>
+                    <div class="admin-card-actions">
+                        <a href="/mangasan/admin/rankings.php" class="btn btn-primary">Voir</a>
                     </div>
                 </article>
 
