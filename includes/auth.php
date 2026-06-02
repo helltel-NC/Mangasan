@@ -20,7 +20,8 @@ function findUserByUsername(PDO $pdo, string $username): ?array
                 users.password_hash,
                 users.status,
                 users.role_id,
-                roles.name AS role_name
+                roles.name AS role_name,
+                users.must_change_password
             FROM users
             INNER JOIN roles ON roles.id = users.role_id
             WHERE users.username = :username
@@ -57,6 +58,7 @@ function loginUser(PDO $pdo, string $username, string $password): bool
     $_SESSION['role_id'] = (int)$user['role_id'];
     $_SESSION['role'] = $user['role_name'];
     $_SESSION['logged_in'] = true;
+    $_SESSION['must_change_password'] = (int)($user['must_change_password'] ?? 0);
 
     session_regenerate_id(true);
 

@@ -26,6 +26,11 @@ if (!loginUser($pdo, $username, $password)) {
     exit;
 }
 
+if (!empty($_SESSION['must_change_password'])) {
+    header('Location: /mangasan/public/account.php?password_required=1#password');
+    exit;
+}
+
 if (getCurrentUserRole() === 'admin') {
     header('Location: /mangasan/admin/index.php');
     exit;

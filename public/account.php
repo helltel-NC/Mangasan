@@ -35,8 +35,12 @@ function accountTabUrl(string $tab): string
     return '/mangasan/public/account.php?tab=' . rawurlencode($tab);
 }
 
-$allowedTabs = ['fiches', 'classement', 'profil'];
+$allowedTabs = ['fiches', 'classement', 'profil', 'password'];
 $activeTab = isset($_GET['tab']) ? (string) $_GET['tab'] : 'fiches';
+
+if (isset($_GET['password_required']) && (string) $_GET['password_required'] === '1') {
+    $activeTab = 'password';
+}
 
 if (!in_array($activeTab, $allowedTabs, true)) {
     $activeTab = 'fiches';
@@ -51,6 +55,7 @@ $stmt = $pdo->prepare(
         users.last_name,
         users.display_name,
         users.class_name,
+        users.must_change_password,
         roles.label AS role_label
      FROM users
      INNER JOIN roles ON roles.id = users.role_id
@@ -227,7 +232,7 @@ if ($activeEdition && $activeEditionMangas) {
         if ($accountPrimaryActionUrl === null && (!$hubStarted || !$hubLocked)) {
             $accountPrimaryActionUrl = $hubReviewUrl;
             $accountPrimaryActionLabel = !$hubStarted
-                ? 'Créer une fiche'
+                ? 'Remplir une fiche'
                 : 'Continuer une fiche';
         }
     }
@@ -300,6 +305,7 @@ require_once __DIR__ . '/../includes/header.php';
             <a href="<?php echo e(accountTabUrl('fiches')); ?>" class="account-tab <?php echo $activeTab === 'fiches' ? 'is-current' : ''; ?>">Mes fiches</a>
             <a href="<?php echo e(accountTabUrl('classement')); ?>" class="account-tab <?php echo $activeTab === 'classement' ? 'is-current' : ''; ?>">Mon classement</a>
             <a href="<?php echo e(accountTabUrl('profil')); ?>" class="account-tab <?php echo $activeTab === 'profil' ? 'is-current' : ''; ?>">Mon profil</a>
+            <a href="<?php echo e(accountTabUrl('password')); ?>" class="account-tab <?php echo $activeTab === 'password' ? 'is-current' : ''; ?>">Mot de passe</a>
         </div>
     </nav>
 
@@ -310,6 +316,12 @@ require_once __DIR__ . '/../includes/header.php';
                     <?php echo e($flashMessage['message']); ?>
                 </div>
             <?php endforeach; ?>
+
+            <?php if (!empty($user['must_change_password'])): ?>
+                <div class="alert error">
+                    Tu utilises encore un mot de passe temporaire. Change ton mot de passe pour sécuriser ton compte.
+                </div>
+            <?php endif; ?>
 
             <section class="account-tab-panel <?php echo $activeTab === 'fiches' ? 'is-active' : 'is-hidden'; ?>" id="account-tab-fiches">
                 <div class="section-heading account-section-heading">
@@ -482,6 +494,47 @@ require_once __DIR__ . '/../includes/header.php';
                             <div class="account-actions">
                                 <button type="submit" class="btn btn-primary">Enregistrer</button>
                                 <a href="/mangasan/public/index.php" class="btn btn-secondary">Retour</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section class="account-tab-panel <?php echo $activeTab === 'password' ? 'is-active' : 'is-hidden'; ?>" id="account-tab-password">
+                <div class="section-heading account-section-heading">
+                    <div>
+                        <p class="section-kicker">Sécurité</p>
+                        <h2>Changer mon mot de passe</h2>
+                    </div>
+                </div>
+
+                <div class="account-layout">
+                    <div class="account-panel">
+                        <form method="post" action="/mangasan/actions/password_update.php" class="account-form" autocomplete="off">
+                            <div class="account-field account-field-wide">
+                                <p class="account-empty-text">
+                                    Choisis un mot de passe personnel. Il doit contenir au moins 8 caractères.
+                                </p>
+                            </div>
+
+                            <div class="account-field account-field-wide">
+                                <label for="current_password">Mot de passe actuel</label>
+                                <input type="password" id="current_password" name="current_password" autocomplete="current-password" required>
+                            </div>
+
+                            <div class="account-field">
+                                <label for="new_password">Nouveau mot de passe</label>
+                                <input type="password" id="new_password" name="new_password" autocomplete="new-password" minlength="8" required>
+                            </div>
+
+                            <div class="account-field">
+                                <label for="new_password_confirm">Confirmer le nouveau mot de passe</label>
+                                <input type="password" id="new_password_confirm" name="new_password_confirm" autocomplete="new-password" minlength="8" required>
+                            </div>
+
+                            <div class="account-actions">
+                                <button type="submit" class="btn btn-primary">Changer mon mot de passe</button>
+                                <a href="/mangasan/public/account.php?tab=profil" class="btn btn-secondary">Retour au profil</a>
                             </div>
                         </form>
                     </div>
