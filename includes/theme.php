@@ -9,29 +9,17 @@ function normalizeThemeColor(?string $value, string $default): string
         : $default;
 }
 
+function normalizeVisualEffectType(?string $value): string
+{
+    $value = (string) $value;
+    $allowed = ['none', 'sparkles', 'aurora', 'speed_lines', 'manga_dots', 'music_notes'];
+
+    return in_array($value, $allowed, true) ? $value : 'none';
+}
+
 function getSiteThemeSettings(PDO $pdo): array
 {
-    $stmt = $pdo->query(
-        'SELECT
-            site_title,
-            site_title_type,
-            primary_color,
-            secondary_color,
-            background_color,
-            text_color,
-            accent_color,
-            logo_path,
-            hero_background_type,
-            hero_background_value,
-            homepage_intro,
-            hero_text_color,
-            hide_hero_text,
-            hero_login_position
-         FROM site_settings
-         ORDER BY id ASC
-         LIMIT 1'
-    );
-
+    $stmt = $pdo->query('SELECT * FROM site_settings ORDER BY id ASC LIMIT 1');
     $settings = $stmt->fetch() ?: [];
 
     return [
@@ -48,6 +36,7 @@ function getSiteThemeSettings(PDO $pdo): array
         'hero_background_value' => trim((string) ($settings['hero_background_value'] ?? '')),
         'homepage_intro' => trim((string) ($settings['homepage_intro'] ?? '')),
         'hide_hero_text' => !empty($settings['hide_hero_text']),
+        'visual_effect_type' => normalizeVisualEffectType($settings['visual_effect_type'] ?? 'none'),
         'hero_login_position' => in_array(($settings['hero_login_position'] ?? 'right'), ['left', 'right'], true)
             ? (string) $settings['hero_login_position']
             : 'right'

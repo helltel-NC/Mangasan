@@ -186,6 +186,20 @@ require_once __DIR__ . '/../includes/header.php';
                             </div>
 
                             <div class="admin-field">
+                                <label for="visual_effect_type">Effet visuel du site</label>
+                                <select id="visual_effect_type" name="visual_effect_type">
+                                    <?php $visualEffectType = (string) ($settings['visual_effect_type'] ?? 'none'); ?>
+                                    <option value="none" <?php echo $visualEffectType === 'none' ? 'selected' : ''; ?>>Aucun</option>
+                                    <option value="sparkles" <?php echo $visualEffectType === 'sparkles' ? 'selected' : ''; ?>>Paillettes discrètes</option>
+                                    <option value="aurora" <?php echo $visualEffectType === 'aurora' ? 'selected' : ''; ?>>Faisceaux / aurore</option>
+                                    <option value="speed_lines" <?php echo $visualEffectType === 'speed_lines' ? 'selected' : ''; ?>>Lignes manga</option>
+                                    <option value="manga_dots" <?php echo $visualEffectType === 'manga_dots' ? 'selected' : ''; ?>>Trame manga</option>
+                                    <option value="music_notes" <?php echo $visualEffectType === 'music_notes' ? 'selected' : ''; ?>>Notes de musique</option>
+                                </select>
+                                <p class="setting-help">L’effet reprend automatiquement les couleurs du thème actuel.</p>
+                            </div>
+
+                            <div class="admin-field">
                                 <label for="hero_login_position">Position du formulaire de connexion</label>
                                 <select id="hero_login_position" name="hero_login_position">
                                     <option value="left" <?php echo $settings['hero_login_position'] === 'left' ? 'selected' : ''; ?>>Gauche</option>
@@ -239,12 +253,10 @@ require_once __DIR__ . '/../includes/header.php';
 
                         <div class="admin-site-preview-hero" id="previewHero">
                             <div class="admin-site-preview-hero-inner <?php echo $settings['hero_login_position'] === 'left' ? 'is-login-left' : ''; ?>" id="previewHeroInner">
-                                <div class="admin-site-preview-copy<?php echo !empty($settings['hide_hero_text']) ? ' is-hero-text-hidden' : ''; ?>">
+                                <div class="admin-site-preview-copy">
                                     <p class="admin-site-preview-kicker">Mangasan</p>
-                                    <?php if (empty($settings['hide_hero_text'])): ?>
-                                        <h3 id="previewHeroTitle"><?php echo e($settings['site_title']); ?></h3>
-                                        <p id="previewHeroIntro"><?php echo e($settings['homepage_intro']); ?></p>
-                                    <?php endif; ?>
+                                    <h3 id="previewHeroTitle"><?php echo e($settings['site_title']); ?></h3>
+                                    <p id="previewHeroIntro"><?php echo e($settings['homepage_intro']); ?></p>
                                 </div>
 
                                 <div class="admin-site-preview-login" id="previewLoginBox">

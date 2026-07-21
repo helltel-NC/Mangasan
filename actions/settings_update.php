@@ -64,8 +64,9 @@ $logoPath = trim((string) ($_POST['logo_path'] ?? ''));
 $heroBackgroundType = trim((string) ($_POST['hero_background_type'] ?? 'image'));
 $heroBackgroundValue = trim((string) ($_POST['hero_background_value'] ?? ''));
 $homepageIntro = trim((string) ($_POST['homepage_intro'] ?? ''));
-$heroLoginPosition = trim((string) ($_POST['hero_login_position'] ?? 'right'));
 $hideHeroText = isset($_POST['hide_hero_text']) ? 1 : 0;
+$visualEffectType = trim((string) ($_POST['visual_effect_type'] ?? 'none'));
+$heroLoginPosition = trim((string) ($_POST['hero_login_position'] ?? 'right'));
 
 if ($siteTitle === '') {
     setFlashMessage('error', 'Le titre du site est obligatoire.');
@@ -87,6 +88,12 @@ if (!in_array($heroBackgroundType, ['color', 'image', 'video'], true)) {
 
 if (!in_array($heroLoginPosition, ['left', 'right'], true)) {
     setFlashMessage('error', 'Position du formulaire invalide.');
+    header('Location: /mangasan/admin/setting.php');
+    exit;
+}
+
+if (!in_array($visualEffectType, ['none', 'sparkles', 'aurora', 'speed_lines', 'manga_dots', 'music_notes'], true)) {
+    setFlashMessage('error', 'Effet visuel invalide.');
     header('Location: /mangasan/admin/setting.php');
     exit;
 }
@@ -156,6 +163,7 @@ try {
              homepage_intro = :homepage_intro,
              hero_text_color = :hero_text_color,
              hide_hero_text = :hide_hero_text,
+             visual_effect_type = :visual_effect_type,
              hero_login_position = :hero_login_position,
              updated_by = :updated_by
          WHERE id = :id'
@@ -175,6 +183,7 @@ try {
         'homepage_intro' => $homepageIntro !== '' ? $homepageIntro : null,
         'hero_text_color' => $heroTextColor,
         'hide_hero_text' => $hideHeroText,
+        'visual_effect_type' => $visualEffectType,
         'hero_login_position' => $heroLoginPosition,
         'updated_by' => getCurrentUserId(),
         'id' => $settingsId

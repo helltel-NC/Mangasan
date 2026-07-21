@@ -23,6 +23,29 @@ if (!isset($extraCss) || !is_array($extraCss)) {
 if (!isset($headHtml) || !is_string($headHtml)) {
     $headHtml = '';
 }
+
+$bodyClassList = [];
+
+if (isset($bodyClass) && trim((string) $bodyClass) !== '') {
+    $bodyClassList = preg_split('/\s+/', trim((string) $bodyClass)) ?: [];
+}
+
+$visualEffectType = 'none';
+
+if (isset($theme) && is_array($theme)) {
+    $visualEffectType = (string) ($theme['visual_effect_type'] ?? 'none');
+}
+
+$allowedVisualEffects = ['sparkles', 'aurora', 'speed_lines', 'manga_dots', 'music_notes'];
+$scriptName = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+$isAdminPage = str_contains($scriptName, '/admin/');
+
+if (!$isAdminPage && in_array($visualEffectType, $allowedVisualEffects, true)) {
+    $bodyClassList[] = 'visual-effect-' . $visualEffectType;
+}
+
+$bodyClassList = array_values(array_unique(array_filter($bodyClassList)));
+$bodyClassAttribute = trim(implode(' ', $bodyClassList));
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -39,4 +62,4 @@ if (!isset($headHtml) || !is_string($headHtml)) {
 
     <?php echo $headHtml; ?>
 </head>
-<body>
+<body<?php echo $bodyClassAttribute !== '' ? ' class="' . htmlspecialchars($bodyClassAttribute, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
