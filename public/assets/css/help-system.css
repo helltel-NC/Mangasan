@@ -1,0 +1,212 @@
+/*
+ * Aide contextuelle de l'administration Mangasan.
+ * Le moteur est générique : chaque page fournit simplement ses étapes.
+ */
+
+.admin-help-layer[hidden] {
+    display: none !important;
+}
+
+.admin-help-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+}
+
+.admin-help-blocker {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    background: transparent;
+    cursor: default;
+}
+
+.admin-help-spotlight {
+    position: fixed;
+    z-index: 12001;
+    pointer-events: none;
+    border: 2px solid color-mix(in srgb, var(--color-primary) 78%, white);
+    border-radius: 14px;
+    box-shadow:
+        0 0 0 9999px rgba(0, 0, 0, 0.76),
+        0 0 0 4px color-mix(in srgb, var(--color-primary) 22%, transparent),
+        0 0 34px color-mix(in srgb, var(--color-primary) 42%, transparent);
+    transition:
+        top 0.24s ease,
+        left 0.24s ease,
+        width 0.24s ease,
+        height 0.24s ease,
+        border-radius 0.24s ease;
+}
+
+.admin-help-popover {
+    position: fixed;
+    z-index: 12002;
+    width: min(410px, calc(100vw - 32px));
+    max-height: min(620px, calc(100vh - 32px));
+    overflow: auto;
+    background:
+        linear-gradient(180deg, rgba(28, 28, 28, 0.995), rgba(14, 14, 14, 0.995));
+    border: 1px solid color-mix(in srgb, var(--color-primary) 45%, #353535);
+    border-radius: 16px;
+    box-shadow:
+        0 28px 80px rgba(0, 0, 0, 0.58),
+        0 0 34px color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-text);
+    outline: none;
+}
+
+.admin-help-popover-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px 14px;
+}
+
+.admin-help-popover-head > div {
+    display: grid;
+    gap: 4px;
+}
+
+.admin-help-guide-name {
+    color: var(--color-primary);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.admin-help-counter {
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.admin-help-close {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.admin-help-close:hover,
+.admin-help-close:focus-visible {
+    background: color-mix(in srgb, var(--color-primary) 28%, #222222);
+    border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+    transform: scale(1.04);
+    outline: none;
+}
+
+.admin-help-progress {
+    height: 3px;
+    margin: 0 20px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+}
+
+.admin-help-progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    transition: width 0.24s ease;
+}
+
+.admin-help-popover-body {
+    display: grid;
+    gap: 12px;
+    padding: 20px;
+}
+
+.admin-help-popover-body h2 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 1.28rem;
+    line-height: 1.25;
+}
+
+.admin-help-popover-body p {
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.65;
+}
+
+.admin-help-tip {
+    padding: 11px 13px;
+    color: var(--color-text) !important;
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    border-left: 3px solid var(--color-primary);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.92rem;
+}
+
+.admin-help-tip.is-hidden {
+    display: none;
+}
+
+.admin-help-popover-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 20px 20px;
+}
+
+.admin-help-popover-actions .btn {
+    min-width: 120px;
+}
+
+.admin-help-popover-actions .btn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
+.admin-help-launch {
+    gap: 7px;
+}
+
+.admin-help-launch::before {
+    content: "?";
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+@media (max-width: 760px) {
+    .admin-help-popover {
+        left: 12px !important;
+        right: 12px !important;
+        bottom: 12px !important;
+        top: auto !important;
+        width: auto;
+        max-height: min(52vh, 520px);
+    }
+
+    .admin-help-spotlight {
+        border-radius: 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-help-spotlight,
+    .admin-help-progress span,
+    .admin-help-close {
+        transition: none !important;
+    }
+}

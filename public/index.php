@@ -7,6 +7,11 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/theme.php';
 require_once __DIR__ . '/../includes/rankings.php';
+require_once __DIR__ . '/../includes/layout.php';
+
+$layoutEditorMode = isset($_GET['layout_editor'])
+    && (string) $_GET['layout_editor'] === '1'
+    && isAdmin();
 
 
 function e(?string $value): string
@@ -87,6 +92,25 @@ function renderSectionMedia(?array $section, string $wrapperClass = 'section-med
     }
 
     echo '</div>';
+}
+
+function renderHomeLayoutBlockOpen(bool $enabled, array $layout, string $key, string $label): void
+{
+    if (!$enabled) {
+        return;
+    }
+
+    echo '<div class="home-layout-block"';
+    echo ' data-layout-block="' . e($key) . '"';
+    echo ' data-layout-label="' . e($label) . '"';
+    echo ' style="' . e(homeLayoutBlockStyle($layout, $key)) . '">';
+}
+
+function renderHomeLayoutBlockClose(bool $enabled): void
+{
+    if ($enabled) {
+        echo '</div>';
+    }
 }
 
 $siteSettingsStmt = $pdo->query(
@@ -247,6 +271,68 @@ $heroLoginPosition = in_array($heroLoginPosition, ['left', 'right'], true) ? $he
 $homepageIntro = trim((string) ($siteSettings['homepage_intro'] ?? ''));
 $hideHeroText = !empty($siteSettings['hide_hero_text']);
 
+
+$layoutBlockDefinitions = [
+    [
+        'key' => 'hero',
+        'label' => 'Bandeau principal',
+        'x' => 1,
+        'w' => 12,
+        'minHeight' => 0,
+    ],
+];
+
+if ($editionSection) {
+    $layoutBlockDefinitions[] = [
+        'key' => 'section:' . (int) $editionSection['id'],
+        'label' => trim((string) ($editionSection['title'] ?? 'Édition actuelle')) ?: 'Édition actuelle',
+        'x' => 1,
+        'w' => 12,
+    ];
+}
+
+if ($canDisplayActiveEditionRanking && $activeEdition) {
+    $layoutBlockDefinitions[] = [
+        'key' => 'ranking',
+        'label' => 'Classement',
+        'x' => 1,
+        'w' => 12,
+    ];
+}
+
+foreach ([$archivesSection, $contestSection, $videosSection, $rulesSection] as $layoutSection) {
+    if (!$layoutSection) {
+        continue;
+    }
+
+    $layoutBlockDefinitions[] = [
+        'key' => 'section:' . (int) $layoutSection['id'],
+        'label' => trim((string) ($layoutSection['title'] ?? 'Section')) ?: 'Section',
+        'x' => 1,
+        'w' => 12,
+    ];
+}
+
+$homeLayoutState = getHomeLayoutState(
+    $pdo,
+    $layoutBlockDefinitions,
+    $heroLoginPosition,
+    $layoutEditorMode
+);
+$homeLayout = $homeLayoutState['layout'];
+$layoutEnabled = $layoutEditorMode || !empty($homeLayoutState['has_published']);
+$heroLoginLayout = $homeLayout['components']['hero_login'] ?? ['x' => 9, 'y' => 1, 'w' => 4];
+$heroLoginIsLeft = ((int) ($heroLoginLayout['x'] ?? 9)) <= 5;
+
+if ($layoutEnabled) {
+    $extraCss[] = '/mangasan/public/assets/css/home-layout.css';
+}
+
+if ($layoutEditorMode) {
+    $extraCss[] = '/mangasan/public/assets/css/layout-editor.css';
+    $bodyClass = trim((string) ($bodyClass ?? '') . ' layout-editor-mode');
+}
+
 $heroTitle = !empty($heroSection['title'])
     ? trim((string) $heroSection['title'])
     : (in_array($siteTitleType, ['image', 'text_image', 'none'], true) ? '' : $siteTitle);
@@ -326,7 +412,52 @@ require_once __DIR__ . '/../includes/header.php';
     <?php endif; ?>
 </style>
 
-<main class="page-home">
+<?php if ($layoutEditorMode): ?>
+    <div class="layout-editor-toolbar" role="region" aria-label="Éditeur de mise en page">
+        <div class="layout-editor-toolbar-main">
+            <a href="/mangasan/admin/index.php#configuration" class="btn btn-secondary">← Administration</a>
+            <div class="layout-editor-toolbar-title">
+                <strong>Éditeur de mise en page</strong>
+                <small>Déplacez et redimensionnez les blocs sur la grille de 12 colonnes.</small>
+            </div>
+            <span class="layout-editor-status" data-layout-status>Brouillon à jour</span>
+        </div>
+
+        <div class="layout-editor-toolbar-actions">
+            <button type="button" class="btn btn-secondary" data-layout-cancel>Annuler</button>
+            <button type="button" class="btn btn-secondary" data-layout-reset>Disposition par défaut</button>
+            <button
+                type="button"
+                class="btn btn-secondary layout-editor-danger"
+                data-layout-restore
+                <?php echo empty($homeLayoutState['has_previous']) ? 'disabled' : ''; ?>
+            >Restaurer</button>
+            <button
+                type="button"
+                class="btn btn-secondary"
+                data-layout-save
+                <?php echo empty($homeLayoutState['storage_ready']) ? 'disabled' : ''; ?>
+            >Enregistrer le brouillon</button>
+            <button
+                type="button"
+                class="btn layout-editor-publish"
+                data-layout-publish
+                <?php echo empty($homeLayoutState['storage_ready']) ? 'disabled' : ''; ?>
+            >Publier</button>
+        </div>
+    </div>
+
+    <?php if (empty($homeLayoutState['storage_ready'])): ?>
+        <div class="layout-editor-storage-warning">
+            La base locale n’est pas encore préparée pour l’éditeur. Exécutez
+            <strong>config/migrations/20260922_page_layouts.sql</strong>, puis rechargez cette page.
+        </div>
+    <?php endif; ?>
+
+    <div class="layout-editor-toast" data-layout-toast role="status" aria-live="polite"></div>
+<?php endif; ?>
+
+<main class="page-home<?php echo $layoutEnabled ? ' layout-managed' : ''; ?>">
     <header class="site-header">
         <div class="container header-inner">
         <div class="logo">
@@ -381,6 +512,15 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </header>
 
+    <?php if ($layoutEnabled): ?>
+        <div
+            class="home-layout-grid"
+            data-home-layout-grid
+            style="--home-layout-gap: <?php echo (int) ($homeLayout['gap'] ?? 18); ?>px;"
+        >
+    <?php endif; ?>
+
+    <?php renderHomeLayoutBlockOpen($layoutEnabled, $homeLayout, 'hero', 'Bandeau principal'); ?>
     <section class="hero" style="<?php echo $heroStyle; ?>">
         <?php if ($heroBackgroundType === 'video' && $heroBackgroundValue !== '' && isVideoFilePath($heroBackgroundValue)): ?>
             <video class="hero-bg-video" autoplay muted loop playsinline>
@@ -388,7 +528,13 @@ require_once __DIR__ . '/../includes/header.php';
             </video>
         <?php endif; ?>
 
-        <div class="container hero-content hero-content--login-<?php echo e($heroLoginPosition); ?>">
+        <div
+            class="container hero-content hero-content--login-<?php echo e($heroLoginPosition); ?><?php echo $layoutEnabled ? ' home-layout-hero-content ' . ($heroLoginIsLeft ? 'is-login-left' : 'is-login-right') : ''; ?>"
+            <?php if ($layoutEnabled): ?>
+                data-hero-layout-content
+                style="<?php echo e(heroLoginLayoutStyle($homeLayout)); ?>"
+            <?php endif; ?>
+        >
             <div class="hero-text">
                 <?php if ($heroKicker !== ''): ?>
                     <p class="hero-kicker"><?php echo e($heroKicker); ?></p>
@@ -405,7 +551,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <?php endif; ?>
             </div>
 
-            <div class="hero-visual">
+            <div class="hero-visual"<?php echo $layoutEnabled ? ' data-layout-component="hero_login"' : ''; ?>>
                 <div class="hero-login">
                     <?php if (!isLoggedIn()): ?>
                         <?php if (!empty($_SESSION['login_error'])): ?>
@@ -438,8 +584,10 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
         </div>
     </section>
+    <?php renderHomeLayoutBlockClose($layoutEnabled); ?>
 
     <?php if ($editionSection): ?>
+        <?php renderHomeLayoutBlockOpen($layoutEnabled, $homeLayout, 'section:' . (int) $editionSection['id'], (string) $editionSection['title']); ?>
         <section class="section featured-section" id="edition">
             <div class="container">
                 <div class="section-heading">
@@ -572,8 +720,10 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
             </div>
         </section>
+        <?php renderHomeLayoutBlockClose($layoutEnabled); ?>
     <?php endif; ?>
     <?php if ($canDisplayActiveEditionRanking && $activeEdition): ?>
+        <?php renderHomeLayoutBlockOpen($layoutEnabled, $homeLayout, 'ranking', 'Classement'); ?>
         <section class="section alt" id="ranking">
             <div class="container">
                 <div class="section-heading">
@@ -640,8 +790,10 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             </div>
         </section>
+        <?php renderHomeLayoutBlockClose($layoutEnabled); ?>
     <?php endif; ?>
     <?php if ($archivesSection): ?>
+        <?php renderHomeLayoutBlockOpen($layoutEnabled, $homeLayout, 'section:' . (int) $archivesSection['id'], (string) $archivesSection['title']); ?>
         <section class="section archives-section" id="archives">
             <div class="container">
                 <div class="section-heading">
@@ -690,9 +842,11 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
             </div>
         </section>
+        <?php renderHomeLayoutBlockClose($layoutEnabled); ?>
     <?php endif; ?>
 
     <?php if ($contestSection): ?>
+        <?php renderHomeLayoutBlockOpen($layoutEnabled, $homeLayout, 'section:' . (int) $contestSection['id'], (string) $contestSection['title']); ?>
         <section class="section alt" id="concours">
             <div class="container">
                 <h2><?php echo e($contestSection['title']); ?></h2>
@@ -708,9 +862,11 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             </div>
         </section>
+        <?php renderHomeLayoutBlockClose($layoutEnabled); ?>
     <?php endif; ?>
 
     <?php if ($videosSection): ?>
+        <?php renderHomeLayoutBlockOpen($layoutEnabled, $homeLayout, 'section:' . (int) $videosSection['id'], (string) $videosSection['title']); ?>
         <section class="section" id="videos">
             <div class="container">
                 <h2><?php echo e($videosSection['title']); ?></h2>
@@ -728,9 +884,11 @@ require_once __DIR__ . '/../includes/header.php';
                 <div class="video-grid"></div>
             </div>
         </section>
+        <?php renderHomeLayoutBlockClose($layoutEnabled); ?>
     <?php endif; ?>
 
     <?php if ($rulesSection): ?>
+        <?php renderHomeLayoutBlockOpen($layoutEnabled, $homeLayout, 'section:' . (int) $rulesSection['id'], (string) $rulesSection['title']); ?>
         <section class="section alt" id="reglement">
             <div class="container">
                 <h2><?php echo e($rulesSection['title']); ?></h2>
@@ -746,6 +904,11 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             </div>
         </section>
+        <?php renderHomeLayoutBlockClose($layoutEnabled); ?>
+    <?php endif; ?>
+
+    <?php if ($layoutEnabled): ?>
+        </div>
     <?php endif; ?>
 
     <div class="detail-overlay" id="detailOverlay">
@@ -779,6 +942,28 @@ $extraJs = [
     '/mangasan/public/assets/js/home.js',
     '/mangasan/public/assets/js/public-reviews.js'
 ];
+
+if ($layoutEditorMode) {
+    $extraJs[] = '/mangasan/public/assets/js/layout-editor.js';
+    $editorClientConfig = [
+        'layout' => $homeLayout,
+        'defaultLayout' => $homeLayoutState['default'],
+        'storageReady' => (bool) $homeLayoutState['storage_ready'],
+        'hasPrevious' => (bool) $homeLayoutState['has_previous'],
+    ];
+
+    echo '<script>window.MangasanLayoutEditor = '
+        . json_encode(
+            $editorClientConfig,
+            JSON_UNESCAPED_UNICODE
+            | JSON_UNESCAPED_SLASHES
+            | JSON_HEX_TAG
+            | JSON_HEX_AMP
+            | JSON_HEX_APOS
+            | JSON_HEX_QUOT
+        )
+        . ';</script>';
+}
 
 require_once __DIR__ . '/../includes/footer.php';
 ?>

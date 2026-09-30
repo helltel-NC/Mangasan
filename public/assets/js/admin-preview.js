@@ -134,21 +134,35 @@
         const heroBackgroundValueInput = document.getElementById('hero_background_value');
         const heroBackgroundFileInput = document.getElementById('hero_background_file');
         const homepageIntroInput = document.getElementById('homepage_intro');
+        const hideHeroTextInput = document.getElementById('hide_hero_text');
+        const visualEffectTypeInput = document.getElementById('visual_effect_type');
         const heroLoginPositionInput = document.getElementById('hero_login_position');
 
         const previewRoot = document.getElementById('sitePreviewRoot');
         const previewHeader = document.getElementById('previewSiteHeader');
         const previewHero = document.getElementById('previewHero');
         const previewHeroInner = document.getElementById('previewHeroInner');
+        const previewHeroCopy = document.getElementById('previewHeroCopy');
         const previewTitleText = document.getElementById('previewSiteTitleText');
         const previewLogoImage = document.getElementById('previewSiteLogoImage');
         const previewHeroTitle = document.getElementById('previewHeroTitle');
         const previewHeroIntro = document.getElementById('previewHeroIntro');
         const previewHeroMediaLabel = document.getElementById('previewHeroMediaLabel');
         const previewLoginBox = document.getElementById('previewLoginBox');
+        const previewEffectLayer = document.getElementById('previewEffectLayer');
+        const previewEffectLabel = document.getElementById('previewEffectLabel');
 
         let logoObjectUrl = null;
         let heroObjectUrl = null;
+
+        const effectLabels = {
+            none: 'aucun',
+            sparkles: 'paillettes',
+            aurora: 'faisceaux / aurore',
+            speed_lines: 'lignes manga',
+            manga_dots: 'trame manga',
+            music_notes: 'notes de musique'
+        };
 
         function clearUrl(type) {
             if (type === 'logo' && logoObjectUrl) {
@@ -172,27 +186,23 @@
                 previewLogoImage.src = logoSource !== '' ? logoSource : '';
             }
 
-            if (siteTitleType === 'text') {
-                toggleClass(previewTitleText, 'is-hidden', false);
-                toggleClass(previewLogoImage, 'is-hidden', true);
+            toggleClass(previewTitleText, 'is-hidden', !['text', 'text_image'].includes(siteTitleType));
+            toggleClass(previewLogoImage, 'is-hidden', !['image', 'text_image'].includes(siteTitleType) || logoSource === '');
+        }
+
+        function updateEffectPreview(effectType) {
+            if (previewEffectLabel) {
+                previewEffectLabel.textContent = `Effet : ${effectLabels[effectType] || effectType}`;
+            }
+
+            if (!previewEffectLayer) {
                 return;
             }
 
-            if (siteTitleType === 'image') {
-                toggleClass(previewTitleText, 'is-hidden', true);
-                toggleClass(previewLogoImage, 'is-hidden', logoSource === '');
-                return;
-            }
+            previewEffectLayer.className = 'admin-site-preview-effect-layer';
 
-            if (siteTitleType === 'text_image') {
-                toggleClass(previewTitleText, 'is-hidden', false);
-                toggleClass(previewLogoImage, 'is-hidden', logoSource === '');
-                return;
-            }
-
-            if (siteTitleType === 'none') {
-                toggleClass(previewTitleText, 'is-hidden', true);
-                toggleClass(previewLogoImage, 'is-hidden', true);
+            if (effectType !== 'none') {
+                previewEffectLayer.classList.add(`is-${effectType}`);
             }
         }
 
@@ -208,11 +218,15 @@
             const heroBackgroundType = heroBackgroundTypeInput ? heroBackgroundTypeInput.value : 'color';
             const heroBackgroundValue = heroBackgroundValueInput ? heroBackgroundValueInput.value.trim() : '';
             const homepageIntro = homepageIntroInput ? homepageIntroInput.value : '';
+            const hideHeroText = hideHeroTextInput ? hideHeroTextInput.checked : false;
+            const visualEffectType = visualEffectTypeInput ? visualEffectTypeInput.value : 'none';
             const heroLoginPosition = heroLoginPositionInput ? heroLoginPositionInput.value : 'right';
 
             if (previewRoot) {
                 previewRoot.style.backgroundColor = backgroundColor;
                 previewRoot.style.color = textColor;
+                previewRoot.style.setProperty('--preview-primary', primaryColor);
+                previewRoot.style.setProperty('--preview-accent', accentColor);
             }
 
             if (previewHeader) {
@@ -236,6 +250,8 @@
                 previewHeroIntro.textContent = homepageIntro !== '' ? homepageIntro : 'Texte d’introduction';
             }
 
+            toggleClass(previewHeroCopy, 'is-hidden', hideHeroText);
+
             if (previewHeroInner) {
                 toggleClass(previewHeroInner, 'is-login-left', heroLoginPosition === 'left');
             }
@@ -253,6 +269,7 @@
             }
 
             updateTitleDisplay(siteTitleType, siteTitle, logoSource, textColor);
+            updateEffectPreview(visualEffectType);
 
             if (previewHero) {
                 previewHero.style.background = backgroundColor;
@@ -290,7 +307,7 @@
                     previewHero.style.backgroundRepeat = 'no-repeat';
 
                     if (previewHeroMediaLabel) {
-                        previewHeroMediaLabel.textContent = 'Image hero';
+                        previewHeroMediaLabel.textContent = 'Image du bandeau';
                     }
                 } else {
                     previewHero.style.background = `linear-gradient(135deg, ${secondaryColor}, ${backgroundColor})`;
@@ -301,7 +318,7 @@
                 previewHero.style.background = `linear-gradient(135deg, ${secondaryColor}, ${backgroundColor})`;
 
                 if (previewHeroMediaLabel) {
-                    previewHeroMediaLabel.textContent = heroBackgroundValue !== '' ? `Vidéo : ${heroBackgroundValue}` : 'Vidéo hero';
+                    previewHeroMediaLabel.textContent = heroBackgroundValue !== '' ? `Vidéo : ${heroBackgroundValue}` : 'Vidéo du bandeau';
                 }
             }
         }
@@ -321,6 +338,8 @@
             heroBackgroundValueInput,
             heroBackgroundFileInput,
             homepageIntroInput,
+            hideHeroTextInput,
+            visualEffectTypeInput,
             heroLoginPositionInput
         ].forEach((element) => {
             if (!element) {

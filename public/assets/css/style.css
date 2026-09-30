@@ -795,10 +795,8 @@ body.visual-effect-sparkles::before,
 body.visual-effect-aurora::before,
 body.visual-effect-aurora::after,
 body.visual-effect-speed_lines::before,
-body.visual-effect-speed_lines::after,
 body.visual-effect-manga_dots::before,
-body.visual-effect-music_notes::before,
-body.visual-effect-music_notes::after {
+body.visual-effect-music_notes::before {
     content: "";
     position: fixed;
     inset: 0;
@@ -857,52 +855,22 @@ body.visual-effect-manga_dots::before {
     animation: mangasanMangaDots 34s linear infinite;
 }
 
-body.visual-effect-music_notes::before,
-body.visual-effect-music_notes::after {
-    inset: auto;
-    width: 1px;
-    height: 1px;
-    overflow: visible;
-    white-space: nowrap;
-    font-weight: 900;
-    line-height: 1;
-    opacity: 0.42;
-    filter:
-        drop-shadow(0 0 8px color-mix(in srgb, var(--color-primary) 55%, transparent))
-        drop-shadow(0 0 18px color-mix(in srgb, var(--color-accent) 35%, transparent));
-}
-
 body.visual-effect-music_notes::before {
-    
-    content: "♪";
-    top: 10vh;
-    left: 4vw;
-    color: color-mix(in srgb, var(--color-primary) 72%, white);
-    font-size: clamp(2.2rem, 3.2vw, 4.4rem);
-    text-shadow:
-        12vw 18vh 0 color-mix(in srgb, var(--color-primary) 60%, white),
-        24vw 8vh 0 color-mix(in srgb, var(--color-accent) 55%, white),
-        38vw 22vh 0 color-mix(in srgb, var(--color-primary) 48%, white),
-        58vw 12vh 0 color-mix(in srgb, var(--color-accent) 50%, white),
-        76vw 26vh 0 color-mix(in srgb, var(--color-primary) 44%, white);
-    animation: mangasanMusicNotesFloatA 16s ease-in-out infinite alternate;
+    content: "♪     ♫     ♬     ♩     ♪     ♫\A   ♫     ♪     ♩     ♬     ♫     ♪\A ♬     ♩     ♪     ♫     ♬     ♩\A   ♪     ♬     ♫     ♪     ♩     ♬";
+    white-space: pre;
+    width: 160vw;
+    height: 160vh;
+    inset: -20vh auto auto -20vw;
+    color: color-mix(in srgb, var(--color-primary) 58%, white);
+    opacity: 0.13;
+    font-size: clamp(1.5rem, 5vw, 4rem);
+    line-height: 2.25;
+    letter-spacing: 1.3rem;
+    transform: rotate(-12deg);
+    text-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 55%, transparent);
+    animation: mangasanMusicNotes 30s linear infinite;
 }
 
-body.visual-effect-music_notes::after {
-    content: "♫";
-    top: 20vh;
-    left: 8vw;
-    color: color-mix(in srgb, var(--color-accent) 72%, white);
-    font-size: clamp(1.9rem, 2.8vw, 3.9rem);
-    opacity: 0.34;
-    text-shadow:
-        10vw 15vh 0 color-mix(in srgb, var(--color-accent) 52%, white),
-        29vw 28vh 0 color-mix(in srgb, var(--color-primary) 48%, white),
-        47vw 10vh 0 color-mix(in srgb, var(--color-accent) 46%, white),
-        64vw 31vh 0 color-mix(in srgb, var(--color-primary) 42%, white),
-        82vw 18vh 0 color-mix(in srgb, var(--color-accent) 50%, white);
-    animation: mangasanMusicNotesFloatB 22s ease-in-out infinite alternate-reverse;
-}
 .site-header,
 main,
 .footer {
@@ -920,46 +888,9 @@ main,
     to { transform: translate3d(5%, 4%, 0) rotate(6deg) scale(1.18); }
 }
 
-@keyframes mangasanSpeedTraceA {
-    0% {
-        opacity: 0;
-        transform: translateY(-10%) scaleY(0.18);
-    }
-
-    20% {
-        opacity: 0.10;
-    }
-
-    55% {
-        opacity: 0.24;
-        transform: translateY(0%) scaleY(1);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translateY(8%) scaleY(1.08);
-    }
-}
-
-@keyframes mangasanSpeedTraceB {
-    0% {
-        opacity: 0;
-        transform: translateY(-14%) scaleY(0.12);
-    }
-
-    28% {
-        opacity: 0.08;
-    }
-
-    60% {
-        opacity: 0.16;
-        transform: translateY(0%) scaleY(1);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translateY(10%) scaleY(1.1);
-    }
+@keyframes mangasanSpeedLines {
+    from { background-position: 0 0, 0 0; }
+    to { background-position: -420px 210px, -560px 280px; }
 }
 
 @keyframes mangasanMangaDots {
@@ -967,24 +898,9 @@ main,
     to { background-position: 120px -120px, 147px -109px; }
 }
 
-@keyframes mangasanMusicNotesFloatA {
-    from {
-        transform: translate3d(0, 0, 0) rotate(-8deg);
-    }
-
-    to {
-        transform: translate3d(14px, -18px, 0) rotate(-3deg);
-    }
-}
-
-@keyframes mangasanMusicNotesFloatB {
-    from {
-        transform: translate3d(0, 0, 0) rotate(7deg);
-    }
-
-    to {
-        transform: translate3d(-16px, -12px, 0) rotate(12deg);
-    }
+@keyframes mangasanMusicNotes {
+    from { transform: translate3d(0, 0, 0) rotate(-12deg); }
+    to { transform: translate3d(18vw, -18vh, 0) rotate(-12deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -992,10 +908,8 @@ main,
     body.visual-effect-aurora::before,
     body.visual-effect-aurora::after,
     body.visual-effect-speed_lines::before,
-    body.visual-effect-speed_lines::after,
     body.visual-effect-manga_dots::before,
-    body.visual-effect-music_notes::before,
-    body.visual-effect-music_notes::after {
+    body.visual-effect-music_notes::before {
         animation: none !important;
     }
 }

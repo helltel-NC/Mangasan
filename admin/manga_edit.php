@@ -7,6 +7,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/flash.php';
 require_once __DIR__ . '/../includes/theme.php';
+require_once __DIR__ . '/../includes/help.php';
 
 requireAdmin();
 
@@ -139,7 +140,11 @@ if ($isEditMode) {
 
 $pageTitle = $isEditMode ? 'Modifier un manga - Mangasan' : 'Créer un manga - Mangasan';
 $extraCss = [
-    '/mangasan/public/assets/css/admin.css'
+    '/mangasan/public/assets/css/admin.css',
+    '/mangasan/public/assets/css/help-system.css'
+];
+$extraJs = [
+    '/mangasan/public/assets/js/help-system.js'
 ];
 
 $theme = getSiteThemeSettings($pdo);
@@ -153,12 +158,13 @@ require_once __DIR__ . '/../includes/header.php';
     <section class="home-section">
         <div class="container">
             <div class="admin-toolbar">
-                <div class="admin-page-heading">
+                <div class="admin-page-heading" id="mangaEditHelpHeading">
                     <h1><?php echo $isEditMode ? 'Modifier un manga' : 'Créer un manga'; ?></h1>
                     <p>Gère la fiche globale du manga puis son rattachement aux éditions.</p>
                 </div>
 
                 <div class="admin-toolbar-actions">
+                    <button type="button" class="btn btn-secondary admin-help-launch" data-admin-help-open>Aide</button>
                     <a href="/mangasan/admin/mangas.php" class="btn btn-secondary">Retour mangas</a>
                     <a href="/mangasan/admin/index.php" class="btn btn-secondary">Dashboard</a>
                 </div>
@@ -177,7 +183,7 @@ require_once __DIR__ . '/../includes/header.php';
                             <input type="hidden" name="manga_id" value="<?php echo (int) $manga['id']; ?>">
                         <?php endif; ?>
 
-                        <div class="admin-form-section">
+                        <div class="admin-form-section" id="mangaEditHelpGeneral">
                             <h2>Informations générales</h2>
 
                             <div class="admin-field">
@@ -228,7 +234,7 @@ require_once __DIR__ . '/../includes/header.php';
                             </div>
                         </div>
 
-                        <div class="admin-form-section">
+                        <div class="admin-form-section" id="mangaEditHelpImages">
                             <h2>Images</h2>
 
                             <div class="admin-field">
@@ -252,14 +258,14 @@ require_once __DIR__ . '/../includes/header.php';
                             </div>
                         </div>
 
-                        <div class="admin-form-actions">
+                        <div class="admin-form-actions" id="mangaEditHelpSave">
                             <button type="submit" class="btn btn-primary"><?php echo $isEditMode ? 'Enregistrer' : 'Créer'; ?></button>
                             <a href="/mangasan/admin/mangas.php" class="btn btn-secondary">Annuler</a>
                         </div>
                     </form>
 
                     <?php if ($isEditMode): ?>
-                        <div class="admin-form-section">
+                        <div class="admin-form-section" id="mangaEditHelpEditions">
                             <h2>Rattachement aux éditions</h2>
 
                             <?php if ($stats['editions_count'] > 0): ?>
@@ -269,7 +275,7 @@ require_once __DIR__ . '/../includes/header.php';
                             <?php endif; ?>
 
                             <?php if ($availableEditions): ?>
-                                <form method="post" action="/mangasan/actions/edition_manga_attach.php" class="admin-form">
+                                <form method="post" action="/mangasan/actions/edition_manga_attach.php" class="admin-form" id="mangaEditHelpAttach">
                                     <input type="hidden" name="manga_id" value="<?php echo (int) $manga['id']; ?>">
 
                                     <div class="admin-form-grid">
@@ -301,7 +307,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 </div>
                             <?php endif; ?>
 
-                            <div class="admin-table-wrapper">
+                            <div class="admin-table-wrapper" id="mangaEditHelpAttachments">
                                 <table class="admin-table">
                                     <thead>
                                         <tr>
@@ -359,7 +365,7 @@ require_once __DIR__ . '/../includes/header.php';
                             </div>
                         </div>
                     <?php else: ?>
-                        <div class="admin-form-section">
+                        <div class="admin-form-section" id="mangaEditHelpEditions">
                             <h2>Rattachement aux éditions</h2>
                             <div class="alert success">
                                 Enregistre d’abord le manga pour pouvoir ensuite le rattacher à une ou plusieurs éditions.
@@ -368,7 +374,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <?php endif; ?>
                 </div>
 
-                <aside class="admin-preview-card">
+                <aside class="admin-preview-card" id="mangaEditHelpSummary">
                     <div class="admin-preview-head">
                         <h2>Résumé</h2>
                     </div>
@@ -431,5 +437,75 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </section>
 </main>
+
+
+<?php
+$mangaEditHelpSteps = [
+    [
+        'target' => '#mangaEditHelpHeading',
+        'title' => $isEditMode ? 'Modifier un manga' : 'Créer un manga',
+        'text' => $isEditMode
+            ? 'Cette page permet de modifier la fiche globale du manga et de gérer les éditions auxquelles il est rattaché.'
+            : 'Cette page permet de créer la fiche globale d’un manga. Une fois le manga enregistré, vous pourrez le rattacher à une ou plusieurs éditions.'
+    ],
+    [
+        'target' => '#mangaEditHelpGeneral',
+        'title' => 'Informations générales',
+        'text' => 'Renseignez ici le titre, le sous-titre éventuel, l’auteur, l’illustrateur, l’éditeur, le résumé, l’URL vidéo et le statut du manga.',
+        'tip' => 'Le statut Non actif permet de conserver le manga dans le catalogue d’administration sans le traiter comme un manga actif.'
+    ],
+    [
+        'target' => '#mangaEditHelpImages',
+        'title' => 'Images du manga',
+        'text' => 'Vous pouvez renseigner directement un chemin ou une URL d’image, ou envoyer un fichier depuis l’ordinateur. L’image card sert au visuel compact du manga et l’image de couverture au visuel de couverture.',
+        'tip' => 'Les formats acceptés pour les fichiers envoyés sont JPG, JPEG, PNG et WEBP.'
+    ],
+    [
+        'target' => '#mangaEditHelpSave',
+        'title' => $isEditMode ? 'Enregistrer les modifications' : 'Créer le manga',
+        'text' => $isEditMode
+            ? 'Enregistrer applique les modifications apportées à la fiche globale. Annuler revient à la liste des mangas sans enregistrer les changements en cours.'
+            : 'Créer enregistre le nouveau manga. Annuler revient à la liste des mangas sans créer la fiche.'
+    ],
+    [
+        'target' => '#mangaEditHelpEditions',
+        'title' => 'Rattachement aux éditions',
+        'text' => $isEditMode
+            ? 'Cette partie gère la présence de ce manga dans les différentes éditions de Mangasan. Un même manga peut être rattaché à plusieurs éditions.'
+            : 'Le rattachement aux éditions devient disponible après le premier enregistrement du manga. Créez d’abord la fiche, puis revenez sur cette page pour choisir les éditions concernées.'
+    ]
+];
+
+if ($isEditMode) {
+    if ($availableEditions) {
+        $mangaEditHelpSteps[] = [
+            'target' => '#mangaEditHelpAttach',
+            'title' => 'Ajouter le manga à une édition',
+            'text' => 'Choisissez une édition qui ne contient pas encore ce manga, définissez son ordre d’affichage puis utilisez Rattacher à l’édition.',
+            'tip' => 'L’ordre d’affichage détermine la position du manga parmi les mangas de cette édition.'
+        ];
+    }
+
+    $mangaEditHelpSteps[] = [
+        'target' => '#mangaEditHelpAttachments',
+        'title' => 'Gérer les éditions déjà liées',
+        'text' => 'Ce tableau liste les éditions auxquelles le manga est déjà rattaché. Vous pouvez modifier son ordre, choisir s’il est visible dans l’édition ou détacher uniquement cette liaison.',
+        'tip' => 'Détacher le manga d’une édition ne supprime pas le manga du catalogue et conserve les fiches de lecture déjà enregistrées.'
+    ];
+}
+
+$mangaEditHelpSteps[] = [
+    'target' => '#mangaEditHelpSummary',
+    'title' => 'Résumé de la fiche',
+    'text' => 'Ce panneau résume l’état actuellement enregistré du manga : mode, statut, nombre d’éditions liées, nombre de fiches de lecture et aperçu des images.',
+    'tip' => 'Il s’agit d’un résumé des données enregistrées ; les champs que vous êtes en train de modifier ne sont pris en compte qu’après enregistrement.'
+];
+
+renderAdminHelpGuide([
+    'id' => $isEditMode ? 'admin-manga-edit' : 'admin-manga-create',
+    'title' => $isEditMode ? 'Guide — Modifier un manga' : 'Guide — Créer un manga',
+    'steps' => $mangaEditHelpSteps
+]);
+?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

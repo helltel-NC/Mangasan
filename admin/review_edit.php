@@ -7,6 +7,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/flash.php';
 require_once __DIR__ . '/../includes/theme.php';
+require_once __DIR__ . '/../includes/help.php';
 
 requireAdmin();
 
@@ -27,7 +28,7 @@ function readingSheetStatusLabel(string $status): string
 function reviewFormTypeLabel(?string $formType): string
 {
     return match ((string) $formType) {
-        'mangasan_reading_sheet_v1' => 'Fiche Manga San',
+        'mangasan_reading_sheet_v1' => 'Fiche Mangasan',
         'classic_score' => 'Fiche avec notes',
         default => (string) ($formType ?? 'classic_score')
     };
@@ -90,6 +91,11 @@ function reviewDataValue(array $reviewData, string $key, ?string $fallback = nul
 }
 
 $reviewId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+$returnTo = trim((string) ($_GET['return_to'] ?? '/mangasan/admin/reviews.php'));
+
+if (!str_starts_with($returnTo, '/mangasan/admin/reviews.php')) {
+    $returnTo = '/mangasan/admin/reviews.php';
+}
 
 if (!$reviewId) {
     setFlashMessage('error', 'Fiche de lecture invalide.');
@@ -158,11 +164,15 @@ $rankPoints = calculateRankPoints($totalMangas, (int) $readingSheet['personal_ra
 
 $pageTitle = 'Modifier une fiche de lecture - Mangasan';
 $extraCss = [
-    '/mangasan/public/assets/css/admin.css'
+    '/mangasan/public/assets/css/admin.css',
+    '/mangasan/public/assets/css/help-system.css',
 ];
-$extraJs = $isMangaSanSheet ? [] : [
-    '/mangasan/public/assets/js/admin-reviews.js'
-];
+$extraJs = $isMangaSanSheet
+    ? ['/mangasan/public/assets/js/help-system.js']
+    : [
+        '/mangasan/public/assets/js/admin-reviews.js',
+        '/mangasan/public/assets/js/help-system.js',
+    ];
 
 $theme = getSiteThemeSettings($pdo);
 $headHtml = buildThemeStyleTag($theme);
@@ -171,15 +181,15 @@ $flashMessages = getFlashMessages();
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<main class="admin-dashboard-page">
+<main class="admin-dashboard-page admin-review-edit-page">
     <section class="home-section">
         <div class="container">
-            <div class="admin-toolbar">
+            <div class="admin-toolbar" id="reviewEditHelpHeading">
                 <div class="admin-page-heading">
-                    <h1>Ouvrir une fiche de lecture</h1>
+                    <h1>Modifier une fiche de lecture</h1>
                     <p>
                         <?php if ($isMangaSanSheet): ?>
-                            Consultation et correction de la fiche Manga San enregistrée dans les données de lecture.
+                            Consultation et correction de la fiche Mangasan enregistrée par l’élève.
                         <?php else: ?>
                             Contrôle complet sur la note détaillée, le rang personnel et le texte d’avis.
                         <?php endif; ?>
@@ -187,7 +197,8 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
 
                 <div class="admin-toolbar-actions">
-                    <a href="/mangasan/admin/reviews.php" class="btn btn-secondary">Retour fiches de lecture</a>
+                    <button type="button" class="btn btn-secondary admin-help-launch" data-admin-help-open>Aide</button>
+                    <a href="<?php echo e($returnTo); ?>" class="btn btn-secondary">Retour fiches de lecture</a>
                     <a href="/mangasan/admin/index.php" class="btn btn-secondary">Dashboard</a>
                 </div>
             </div>
@@ -198,12 +209,13 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             <?php endforeach; ?>
 
-            <div class="admin-layout-two-columns">
+            <div class="admin-layout-two-columns admin-review-edit-layout">
                 <div class="admin-panel">
                     <form method="post" action="/mangasan/actions/review_update.php" class="admin-form">
                         <input type="hidden" name="review_id" value="<?php echo (int) $readingSheet['id']; ?>">
+                        <input type="hidden" name="return_to" value="<?php echo e($returnTo); ?>">
 
-                        <div class="admin-form-section">
+                        <div class="admin-form-section" id="reviewEditHelpContext">
                             <h2>Contexte</h2>
 
                             <div class="admin-review-meta">
@@ -249,7 +261,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <?php endif; ?>
 
                         <?php if ($isMangaSanSheet): ?>
-                            <div class="admin-form-section">
+                            <div class="admin-form-section" id="reviewEditHelpMangaInfo">
                                 <h2>Informations manga</h2>
 
                                 <div class="admin-review-grid">
@@ -284,7 +296,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 </div>
                             </div>
 
-                            <div class="admin-form-section">
+                            <div class="admin-form-section" id="reviewEditHelpScenario">
                                 <h2>Scénario</h2>
 
                                 <div class="admin-field">
@@ -308,7 +320,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 </div>
                             </div>
 
-                            <div class="admin-form-section">
+                            <div class="admin-form-section" id="reviewEditHelpDrawing">
                                 <h2>Dessin</h2>
 
                                 <div class="admin-field">
@@ -327,7 +339,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 </div>
                             </div>
 
-                            <div class="admin-form-section">
+                            <div class="admin-form-section" id="reviewEditHelpImpressions">
                                 <h2>Impressions personnelles</h2>
 
                                 <div class="admin-field">
@@ -351,7 +363,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 </div>
                             </div>
                         <?php else: ?>
-                            <div class="admin-form-section">
+                            <div class="admin-form-section" id="reviewEditHelpScores">
                                 <h2>Notation détaillée</h2>
 
                                 <div class="admin-review-grid">
@@ -382,7 +394,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 </div>
                             </div>
 
-                            <div class="admin-form-section">
+                            <div class="admin-form-section" id="reviewEditHelpOpinion">
                                 <h2>Avis</h2>
 
                                 <div class="admin-field">
@@ -392,23 +404,23 @@ require_once __DIR__ . '/../includes/header.php';
                             </div>
                         <?php endif; ?>
 
-                        <div class="admin-form-section">
+                        <div class="admin-form-section" id="reviewEditHelpRank">
                             <h2>Classement personnel</h2>
 
                             <div class="admin-field">
                                 <label for="personal_rank">Rang personnel</label>
-                                <input type="number" id="personal_rank" name="personal_rank" min="1" max="<?php echo $totalMangas; ?>" value="<?php echo (int) $readingSheet['personal_rank']; ?>" required>
-                                <small>Le rang doit être compris entre 1 et <?php echo $totalMangas; ?> pour cette édition.</small>
+                                <input type="number" id="personal_rank" name="personal_rank" min="0" max="<?php echo $totalMangas; ?>" value="<?php echo (int) $readingSheet['personal_rank'] > 0 ? (int) $readingSheet['personal_rank'] : ''; ?>" placeholder="Non classée">
+                                <small>Laisser vide ou saisir 0 si la fiche n’est pas encore classée. Sinon, le rang doit être compris entre 1 et <?php echo $totalMangas; ?>.</small>
                             </div>
                         </div>
 
-                        <div class="admin-form-actions">
+                        <div class="admin-form-actions" id="reviewEditHelpSave">
                             <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                         </div>
                     </form>
                 </div>
 
-                <aside class="admin-preview-card">
+                <aside class="admin-preview-card admin-review-summary-card" id="reviewEditHelpSummary">
                     <div class="admin-preview-head">
                         <h2>Résumé</h2>
                     </div>
@@ -423,7 +435,7 @@ require_once __DIR__ . '/../includes/header.php';
                             <span><?php echo $rankingMethod === 'rank_points' ? 'Points actuels' : 'Note actuelle'; ?></span>
                             <strong>
                                 <?php if ($rankingMethod === 'rank_points'): ?>
-                                    <?php echo $rankPoints; ?> pts
+                                    <?php echo (int) $readingSheet['personal_rank'] > 0 ? $rankPoints . ' pts' : 'Non classée'; ?>
                                 <?php else: ?>
                                     <?php echo e(number_format((float) $readingSheet['score'], 2, '.', '')); ?> / <?php echo e((string) $readingSheet['score_max']); ?>
                                 <?php endif; ?>
@@ -432,7 +444,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                         <div class="admin-summary-item">
                             <span>Rang personnel</span>
-                            <strong><?php echo (int) $readingSheet['personal_rank']; ?> / <?php echo $totalMangas; ?></strong>
+                            <strong><?php echo (int) $readingSheet['personal_rank'] > 0 ? (int) $readingSheet['personal_rank'] . ' / ' . $totalMangas : 'Non classée'; ?></strong>
                         </div>
 
                         <?php if ((string) $readingSheet['status'] === 'locked'): ?>
@@ -458,25 +470,25 @@ require_once __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
 
-                    <div class="admin-preview-section">
+                    <div class="admin-preview-section admin-review-status-actions" id="reviewEditHelpStatusActions">
                         <?php if ((string) $readingSheet['status'] === 'locked'): ?>
                             <form method="post" action="/mangasan/actions/review_unlock.php">
                                 <input type="hidden" name="review_id" value="<?php echo (int) $readingSheet['id']; ?>">
-                                <input type="hidden" name="redirect_to" value="/mangasan/admin/review_edit.php?id=<?php echo (int) $readingSheet['id']; ?>">
+                                <input type="hidden" name="redirect_to" value="/mangasan/admin/review_edit.php?id=<?php echo (int) $readingSheet['id']; ?>&amp;return_to=<?php echo rawurlencode($returnTo); ?>">
                                 <button type="submit" class="btn btn-secondary">Déverrouiller</button>
                             </form>
                         <?php else: ?>
                             <form method="post" action="/mangasan/actions/review_lock.php">
                                 <input type="hidden" name="review_id" value="<?php echo (int) $readingSheet['id']; ?>">
-                                <input type="hidden" name="redirect_to" value="/mangasan/admin/review_edit.php?id=<?php echo (int) $readingSheet['id']; ?>">
+                                <input type="hidden" name="redirect_to" value="/mangasan/admin/review_edit.php?id=<?php echo (int) $readingSheet['id']; ?>&amp;return_to=<?php echo rawurlencode($returnTo); ?>">
                                 <button type="submit" class="btn btn-secondary">Verrouiller</button>
                             </form>
                         <?php endif; ?>
 
                         <form method="post" action="/mangasan/actions/review_delete.php" onsubmit="return confirm('Supprimer cette fiche de lecture ? Cette action est irréversible.');">
                             <input type="hidden" name="review_id" value="<?php echo (int) $readingSheet['id']; ?>">
-                            <input type="hidden" name="redirect_to" value="/mangasan/admin/reviews.php">
-                            <button type="submit" class="btn btn-secondary">Supprimer</button>
+                            <input type="hidden" name="redirect_to" value="<?php echo e($returnTo); ?>">
+                            <button type="submit" class="btn btn-danger">Supprimer</button>
                         </form>
                     </div>
                 </aside>
@@ -484,5 +496,86 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </section>
 </main>
+
+<?php
+$reviewHelpSteps = [
+    [
+        'target' => '#reviewEditHelpHeading',
+        'title' => 'Modifier une fiche de lecture',
+        'text' => 'Cette page permet à l’administration de consulter et corriger une fiche enregistrée par un élève. Les modifications effectuées ici sont enregistrées directement dans sa fiche.',
+        'tip' => 'Le type de fiche dépend de la configuration de l’édition.'
+    ],
+    [
+        'target' => '#reviewEditHelpContext',
+        'title' => 'Contexte de la fiche',
+        'text' => 'Cette zone rappelle l’élève, sa classe, l’édition, le manga, le type de fiche et la méthode de classement. Elle permet de vérifier que vous modifiez bien la bonne fiche.'
+    ],
+];
+
+if ($isMangaSanSheet) {
+    $reviewHelpSteps[] = [
+        'target' => '#reviewEditHelpMangaInfo',
+        'title' => 'Informations sur le manga',
+        'text' => 'Ces champs reprennent les informations saisies ou complétées dans la fiche Mangasan : auteur, illustrateur, public ciblé et genres ou thèmes.',
+        'tip' => 'Pour sélectionner plusieurs publics dans la liste, maintenez Ctrl pendant la sélection.'
+    ];
+    $reviewHelpSteps[] = [
+        'target' => '#reviewEditHelpScenario',
+        'title' => 'Scénario',
+        'text' => 'Cette partie contient l’analyse du cadre, du thème général, des personnages principaux et l’avis de l’élève sur le scénario.'
+    ];
+    $reviewHelpSteps[] = [
+        'target' => '#reviewEditHelpDrawing',
+        'title' => 'Dessin',
+        'text' => 'Cette partie rassemble les remarques de l’élève sur le graphisme, les bulles et son avis général sur le dessin.'
+    ];
+    $reviewHelpSteps[] = [
+        'target' => '#reviewEditHelpImpressions',
+        'title' => 'Impressions personnelles',
+        'text' => 'Vous retrouvez ici ce que l’élève a aimé ou non, son argumentaire pour défendre le manga et son appréciation générale.'
+    ];
+} else {
+    $reviewHelpSteps[] = [
+        'target' => '#reviewEditHelpScores',
+        'title' => 'Notation détaillée',
+        'text' => 'La fiche classique utilise quatre notes. La note finale est recalculée automatiquement à partir de leur moyenne lorsque vous enregistrez.',
+        'tip' => 'Chaque note doit rester comprise entre 0 et la note maximale définie dans l’édition.'
+    ];
+    $reviewHelpSteps[] = [
+        'target' => '#reviewEditHelpOpinion',
+        'title' => 'Avis libre',
+        'text' => 'Ce champ contient le commentaire rédigé par l’élève pour accompagner ses notes.'
+    ];
+}
+
+$reviewHelpSteps[] = [
+    'target' => '#reviewEditHelpRank',
+    'title' => 'Classement personnel',
+    'text' => 'Le rang correspond à la position donnée par l’élève à ce manga dans l’édition. Une fiche peut rester non classée en laissant ce champ vide ou à 0.',
+    'tip' => 'Si vous remplacez un rang déjà utilisé et que cette fiche avait déjà un autre rang, les deux positions sont échangées automatiquement.'
+];
+$reviewHelpSteps[] = [
+    'target' => '#reviewEditHelpSave',
+    'title' => 'Enregistrer les corrections',
+    'text' => 'Ce bouton enregistre les modifications apportées à la fiche. Les données visibles par l’administration et utilisées pour les classements sont alors mises à jour.'
+];
+$reviewHelpSteps[] = [
+    'target' => '#reviewEditHelpSummary',
+    'title' => 'Résumé de la fiche',
+    'text' => 'Cette colonne rappelle le statut, le résultat actuel, le rang personnel ainsi que les dates de création et de dernière modification.'
+];
+$reviewHelpSteps[] = [
+    'target' => '#reviewEditHelpStatusActions',
+    'title' => 'Verrouiller, déverrouiller ou supprimer',
+    'text' => 'Verrouiller empêche l’élève de modifier la fiche. Déverrouiller lui rend la modification possible. Supprimer efface définitivement la fiche.',
+    'tip' => 'Le verrouillage conserve toutes les données. La suppression, elle, est irréversible.'
+];
+
+renderAdminHelpGuide([
+    'id' => 'admin-review-edit',
+    'title' => $isMangaSanSheet ? 'Guide — Fiche Mangasan' : 'Guide — Fiche avec notes',
+    'steps' => $reviewHelpSteps,
+]);
+?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

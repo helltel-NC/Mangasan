@@ -1,0 +1,131 @@
+/*
+ * Mangasan - disposition publiée de la page d'accueil.
+ * La grille ne s'active que lorsqu'une disposition a été publiée
+ * ou lorsque l'administrateur ouvre le mode éditeur.
+ */
+
+.page-home.layout-managed .home-layout-grid {
+    --home-layout-gap: 18px;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+    gap: var(--home-layout-gap);
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+}
+
+.page-home.layout-managed .home-layout-block {
+    grid-column: var(--layout-x, 1) / span var(--layout-w, 12);
+    order: var(--layout-order, 10);
+    min-width: 0;
+    min-height: var(--layout-min-height, 0px);
+    position: relative;
+}
+
+.page-home.layout-managed .home-layout-block > .hero,
+.page-home.layout-managed .home-layout-block > .section {
+    width: 100%;
+    min-width: 0;
+    min-height: inherit;
+    height: 100%;
+    box-sizing: border-box;
+    min-height: 100%;
+}
+
+
+/* Les sections de contenu conservent une largeur de lecture confortable. */
+.page-home.layout-managed .home-layout-block > .section > .container {
+    width: min(92%, var(--container-width));
+}
+
+/*
+ * Le Hero utilise toute la largeur de son bloc.
+ * C'est volontaire : la grille 12 colonnes du composant Connexion / compte
+ * doit couvrir réellement le bandeau, et non rester enfermée dans le
+ * conteneur central de 1200 px.
+ */
+.page-home.layout-managed .home-layout-block > .hero > .container {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Le bloc de connexion devient un composant positionnable dans le hero. */
+.page-home.layout-managed .hero-content.home-layout-hero-content {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-rows: minmax(58px, auto);
+    column-gap: 0;
+    row-gap: 16px;
+    align-items: start;
+    position: relative;
+    min-height: inherit;
+}
+
+.page-home.layout-managed .home-layout-hero-content .hero-text {
+    grid-column: 1 / span 7;
+    grid-row: 1 / span 4;
+    max-width: none;
+    min-width: 0;
+    padding-inline: clamp(18px, 3vw, 56px);
+}
+
+.page-home.layout-managed .home-layout-hero-content.is-login-left .hero-text {
+    grid-column: 5 / span 8;
+}
+
+.page-home.layout-managed .home-layout-hero-content .hero-visual {
+    grid-column: var(--hero-login-x, 9) / span var(--hero-login-w, 4);
+    grid-row: var(--hero-login-y, 1) / span var(--hero-login-h, 4);
+    width: 100%;
+    min-width: 0;
+    align-self: stretch;
+    justify-content: stretch;
+    order: initial;
+}
+
+.page-home.layout-managed .home-layout-hero-content .hero-login {
+    width: 100%;
+    max-width: none;
+    min-height: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* Les gros composants internes doivent pouvoir se contracter dans une demi-largeur. */
+.page-home.layout-managed .home-layout-block .edition-meta-card,
+.page-home.layout-managed .home-layout-block .ranking-table,
+.page-home.layout-managed .home-layout-block .archives-grid,
+.page-home.layout-managed .home-layout-block .section-content,
+.page-home.layout-managed .home-layout-block .section-intro {
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 900px) {
+    .page-home.layout-managed .home-layout-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .page-home.layout-managed .home-layout-block {
+        grid-column: 1 / -1 !important;
+        min-height: 0 !important;
+    }
+
+    .page-home.layout-managed .hero-content.home-layout-hero-content,
+    .page-home.layout-managed .home-layout-hero-content.is-login-left {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-auto-rows: auto;
+    }
+
+    .page-home.layout-managed .home-layout-hero-content .hero-text,
+    .page-home.layout-managed .home-layout-hero-content.is-login-left .hero-text,
+    .page-home.layout-managed .home-layout-hero-content .hero-visual {
+        grid-column: 1 / -1 !important;
+        grid-row: auto !important;
+    }
+}

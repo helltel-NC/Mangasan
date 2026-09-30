@@ -15,9 +15,15 @@ function calculateReviewScore(float $story, float $art, float $universe, float $
     return round(($story + $art + $universe + $message) / 4, 2);
 }
 
-function redirectToAdminReview(int $reviewId): never
+function redirectToAdminReview(int $reviewId, string $returnTo): never
 {
-    header('Location: /mangasan/admin/review_edit.php?id=' . $reviewId);
+    $url = '/mangasan/admin/review_edit.php?id=' . $reviewId;
+
+    if ($returnTo !== '/mangasan/admin/reviews.php') {
+        $url .= '&return_to=' . rawurlencode($returnTo);
+    }
+
+    header('Location: ' . $url);
     exit;
 }
 
@@ -54,6 +60,29 @@ function getTargetAudiencesFromPost(): array
     return $filtered;
 }
 
+function getOptionalPersonalRank(): int
+{
+    $rawRank = $_POST['personal_rank'] ?? '';
+
+    if (is_array($rawRank)) {
+        return -1;
+    }
+
+    $rawRank = trim((string) $rawRank);
+
+    if ($rawRank === '') {
+        return 0;
+    }
+
+    $rank = filter_var($rawRank, FILTER_VALIDATE_INT);
+
+    if ($rank === false) {
+        return -1;
+    }
+
+    return (int) $rank;
+}
+
 function buildReadingSheetData(array $readingSheet): array
 {
     return [
@@ -83,11 +112,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $reviewId = filter_input(INPUT_POST, 'review_id', FILTER_VALIDATE_INT);
-$personalRank = filter_input(INPUT_POST, 'personal_rank', FILTER_VALIDATE_INT);
+$personalRank = getOptionalPersonalRank();
+$returnTo = trim((string) ($_POST['return_to'] ?? '/mangasan/admin/reviews.php'));
+
+if (!str_starts_with($returnTo, '/mangasan/admin/reviews.php')) {
+    $returnTo = '/mangasan/admin/reviews.php';
+}
 
 if (!$reviewId) {
     setFlashMessage('error', 'Fiche de lecture invalide.');
-    header('Location: /mangasan/admin/reviews.php');
+    header('Location: ' . $returnTo);
     exit;
 }
 
@@ -97,6 +131,7 @@ $stmt = $pdo->prepare(
         reviews.user_id,
         reviews.edition_id,
         reviews.manga_id,
+        reviews.personal_rank,
         reviews.status,
         reviews.is_locked,
         reviews.review_data,
@@ -127,44 +162,54 @@ $readingSheet = $stmt->fetch();
 
 if (!$readingSheet) {
     setFlashMessage('error', 'Fiche de lecture introuvable.');
-    header('Location: /mangasan/admin/reviews.php');
+    header('Location: ' . $returnTo);
     exit;
 }
 
-if ($personalRank === false || $personalRank === null || $personalRank < 1) {
-    setFlashMessage('error', 'Le rang personnel est obligatoire et doit être supérieur ou égal à 1.');
-    redirectToAdminReview($reviewId);
+if ($personalRank < 0) {
+    setFlashMessage('error', 'Le rang personnel est invalide.');
+    redirectToAdminReview($reviewId, $returnTo);
 }
 
 $editionMangaCount = max(1, (int) ($readingSheet['edition_manga_count'] ?? 1));
 
-if ($personalRank > $editionMangaCount) {
+if ($personalRank > 0 && $personalRank > $editionMangaCount) {
     setFlashMessage('error', 'Le rang personnel doit être compris entre 1 et ' . $editionMangaCount . '.');
-    redirectToAdminReview($reviewId);
+    redirectToAdminReview($reviewId, $returnTo);
 }
 
-$rankConflictStmt = $pdo->prepare(
-    "SELECT id
-     FROM reviews
-     WHERE user_id = :user_id
-       AND edition_id = :edition_id
-       AND personal_rank = :personal_rank
-       AND id <> :review_id
-     LIMIT 1"
-);
-$rankConflictStmt->execute([
-    'user_id' => (int) $readingSheet['user_id'],
-    'edition_id' => (int) $readingSheet['edition_id'],
-    'personal_rank' => $personalRank,
-    'review_id' => $reviewId
-]);
+$oldPersonalRank = (int) ($readingSheet['personal_rank'] ?? 0);
+$rankConflictReview = null;
+$rankSwapApplied = false;
 
-if ($rankConflictStmt->fetch()) {
-    setFlashMessage('error', 'Ce rang personnel est déjà utilisé par cet utilisateur pour un autre manga de la même édition.');
-    redirectToAdminReview($reviewId);
+if ($personalRank > 0 && $personalRank !== $oldPersonalRank) {
+    $rankConflictStmt = $pdo->prepare(
+        "SELECT id, personal_rank
+         FROM reviews
+         WHERE user_id = :user_id
+           AND edition_id = :edition_id
+           AND personal_rank = :personal_rank
+           AND id <> :review_id
+         LIMIT 1"
+    );
+    $rankConflictStmt->execute([
+        'user_id' => (int) $readingSheet['user_id'],
+        'edition_id' => (int) $readingSheet['edition_id'],
+        'personal_rank' => $personalRank,
+        'review_id' => $reviewId
+    ]);
+
+    $rankConflictReview = $rankConflictStmt->fetch() ?: null;
+
+    if ($rankConflictReview && $oldPersonalRank <= 0) {
+        setFlashMessage('error', 'Ce rang est déjà utilisé par une autre fiche de cet élève. Choisissez un rang libre ou modifiez d’abord une fiche déjà classée.');
+        redirectToAdminReview($reviewId, $returnTo);
+    }
 }
 
 $reviewFormType = (string) ($readingSheet['review_form_type'] ?? 'classic_score');
+$updateSql = '';
+$updateParams = [];
 
 if ($reviewFormType === 'mangasan_reading_sheet_v1') {
     $reviewData = buildReadingSheetData($readingSheet);
@@ -173,7 +218,7 @@ if ($reviewFormType === 'mangasan_reading_sheet_v1') {
         $reviewDataJson = json_encode($reviewData, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
     } catch (JsonException) {
         setFlashMessage('error', 'Impossible d’enregistrer la fiche de lecture.');
-        redirectToAdminReview($reviewId);
+        redirectToAdminReview($reviewId, $returnTo);
     }
 
     $reviewText = $reviewData['appreciation']
@@ -181,7 +226,7 @@ if ($reviewFormType === 'mangasan_reading_sheet_v1') {
         ?? $reviewData['story_opinion']
         ?? null;
 
-    $updateStmt = $pdo->prepare(
+    $updateSql =
         "UPDATE reviews
          SET story_score = 0,
              art_score = 0,
@@ -191,15 +236,14 @@ if ($reviewFormType === 'mangasan_reading_sheet_v1') {
              personal_rank = :personal_rank,
              review_text = :review_text,
              review_data = :review_data
-         WHERE id = :id"
-    );
+         WHERE id = :id";
 
-    $updateStmt->execute([
+    $updateParams = [
         'personal_rank' => $personalRank,
         'review_text' => $reviewText,
         'review_data' => $reviewDataJson,
         'id' => $reviewId
-    ]);
+    ];
 } else {
     $storyScore = filter_input(INPUT_POST, 'story_score', FILTER_VALIDATE_FLOAT);
     $artScore = filter_input(INPUT_POST, 'art_score', FILTER_VALIDATE_FLOAT);
@@ -219,18 +263,18 @@ if ($reviewFormType === 'mangasan_reading_sheet_v1') {
     foreach ($subScores as $label => $value) {
         if ($value === false || $value === null) {
             setFlashMessage('error', 'La note "' . $label . '" est invalide.');
-            redirectToAdminReview($reviewId);
+            redirectToAdminReview($reviewId, $returnTo);
         }
 
         if ((float) $value < 0 || (float) $value > $scoreMax) {
             setFlashMessage('error', 'La note "' . $label . '" doit être comprise entre 0 et ' . $scoreMax . '.');
-            redirectToAdminReview($reviewId);
+            redirectToAdminReview($reviewId, $returnTo);
         }
     }
 
     $finalScore = calculateReviewScore((float) $storyScore, (float) $artScore, (float) $universeScore, (float) $messageScore);
 
-    $updateStmt = $pdo->prepare(
+    $updateSql =
         "UPDATE reviews
          SET story_score = :story_score,
              art_score = :art_score,
@@ -239,10 +283,9 @@ if ($reviewFormType === 'mangasan_reading_sheet_v1') {
              score = :score,
              personal_rank = :personal_rank,
              review_text = :review_text
-         WHERE id = :id"
-    );
+         WHERE id = :id";
 
-    $updateStmt->execute([
+    $updateParams = [
         'story_score' => $storyScore,
         'art_score' => $artScore,
         'universe_score' => $universeScore,
@@ -251,7 +294,42 @@ if ($reviewFormType === 'mangasan_reading_sheet_v1') {
         'personal_rank' => $personalRank,
         'review_text' => $reviewText !== '' ? $reviewText : null,
         'id' => $reviewId
-    ]);
+    ];
+}
+
+try {
+    $pdo->beginTransaction();
+
+    if ($rankConflictReview !== null && $oldPersonalRank > 0) {
+        $swapRankStmt = $pdo->prepare(
+            "UPDATE reviews
+             SET personal_rank = :old_personal_rank
+             WHERE id = :conflict_review_id
+               AND user_id = :user_id
+               AND edition_id = :edition_id"
+        );
+
+        $swapRankStmt->execute([
+            'old_personal_rank' => $oldPersonalRank,
+            'conflict_review_id' => (int) $rankConflictReview['id'],
+            'user_id' => (int) $readingSheet['user_id'],
+            'edition_id' => (int) $readingSheet['edition_id']
+        ]);
+
+        $rankSwapApplied = true;
+    }
+
+    $updateStmt = $pdo->prepare($updateSql);
+    $updateStmt->execute($updateParams);
+
+    $pdo->commit();
+} catch (Throwable) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
+    setFlashMessage('error', 'Impossible de mettre à jour la fiche de lecture.');
+    redirectToAdminReview($reviewId, $returnTo);
 }
 
 logAction(
@@ -263,5 +341,10 @@ logAction(
     'Mise à jour de la fiche de lecture du manga "' . (string) $readingSheet['manga_title'] . '".'
 );
 
-setFlashMessage('success', 'La fiche de lecture a été mise à jour.');
-redirectToAdminReview($reviewId);
+setFlashMessage(
+    'success',
+    $rankSwapApplied
+        ? 'La fiche de lecture a été mise à jour. Les rangs concernés ont été échangés automatiquement.'
+        : 'La fiche de lecture a été mise à jour.'
+);
+redirectToAdminReview($reviewId, $returnTo);

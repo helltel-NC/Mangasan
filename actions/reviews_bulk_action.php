@@ -35,6 +35,12 @@ if (!in_array($bulkAction, $allowedActions, true)) {
     exit;
 }
 
+if ($bulkAction === 'delete' && (string) ($_POST['confirm_delete'] ?? '') !== '1') {
+    setFlashMessage('error', 'La suppression groupée doit être confirmée.');
+    header('Location: ' . $redirectTo);
+    exit;
+}
+
 if (!is_array($reviewIds) || !$reviewIds) {
     setFlashMessage('error', 'Aucune fiche de lecture sélectionnée.');
     header('Location: ' . $redirectTo);
